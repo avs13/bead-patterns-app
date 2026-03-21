@@ -1,4 +1,5 @@
 import { DragHandler } from "./handlers/DragCanvasHandler";
+import {PinchTransformHandler} from "./handlers/PinchTransformHandler";
 import type {
   CanvasHandler,
   CanvasHandlerConstructor,
@@ -60,7 +61,7 @@ export class CanvasEditor {
   }
 
   private setupEventsHandlers() {
-    const handles: CanvasHandlerConstructor[] = [DragHandler];
+    const handles: CanvasHandlerConstructor[] = [DragHandler, PinchTransformHandler];
 
     this.handlers = handles.map((Handler) => new Handler(this));
   }

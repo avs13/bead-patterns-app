@@ -9,6 +9,9 @@ export class CanvasEditor {
   #canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   #options: Required<CanvasEditorOptions>;
+  #dpr = window.devicePixelRatio || 1;
+  #width = 0;
+  #height = 0;
 
   constructor(root: HTMLElement, options: CanvasEditorOptions = {}) {
     if (!root) throw new Error("El elemento root HTML no existe");
@@ -34,7 +37,8 @@ export class CanvasEditor {
   }
 
   private loop() {
-    this.ctx.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
+    this.ctx.setTransform(this.#dpr, 0, 0, this.#dpr, 0, 0);
+    this.ctx.clearRect(0, 0, this.#width, this.#height);
     if (this.#options.showGrid) {
       this.renderGrid();
     }
@@ -43,9 +47,14 @@ export class CanvasEditor {
 
   private resizeCanvas() {
     const rect = this.#root.getBoundingClientRect();
+    this.#dpr = window.devicePixelRatio || 1;
+    this.#width = rect.width;
+    this.#height = rect.height;
 
-    this.#canvas.width = rect.width;
-    this.#canvas.height = rect.height;
+    this.#canvas.width = Math.round(rect.width * this.#dpr);
+    this.#canvas.height = Math.round(rect.height * this.#dpr);
+    this.#canvas.style.width = `${rect.width}px`;
+    this.#canvas.style.height = `${rect.height}px`;
   }
 
   private renderGrid(): void {
@@ -55,17 +64,17 @@ export class CanvasEditor {
     this.ctx.lineWidth = 0.2;
     this.ctx.setLineDash([]);
 
-    for (let x = 0; x <= this.#canvas.width; x += gridSize) {
+    for (let x = 0; x <= this.#width; x += gridSize) {
       this.ctx.beginPath();
       this.ctx.moveTo(x, 0);
-      this.ctx.lineTo(x, this.#canvas.height);
+      this.ctx.lineTo(x, this.#height);
       this.ctx.stroke();
     }
 
-    for (let y = 0; y <= this.#canvas.height; y += gridSize) {
+    for (let y = 0; y <= this.#height; y += gridSize) {
       this.ctx.beginPath();
       this.ctx.moveTo(0, y);
-      this.ctx.lineTo(this.#canvas.width, y);
+      this.ctx.lineTo(this.#width, y);
       this.ctx.stroke();
     }
   }

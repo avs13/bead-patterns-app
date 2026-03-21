@@ -1,3 +1,4 @@
+import { DragHandler } from "./handlers/DragCanvasHandler";
 import type {
   CanvasHandler,
   CanvasHandlerConstructor,
@@ -59,7 +60,7 @@ export class CanvasEditor {
   }
 
   private setupEventsHandlers() {
-    const handles: CanvasHandlerConstructor[] = [];
+    const handles: CanvasHandlerConstructor[] = [DragHandler];
 
     this.handlers = handles.map((Handler) => new Handler(this));
   }

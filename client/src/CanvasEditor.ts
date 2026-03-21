@@ -1,3 +1,8 @@
+import type {
+  CanvasHandler,
+  CanvasHandlerConstructor,
+} from "./handlers/CanvasHandler";
+
 interface CanvasEditorOptions {
   showGrid?: boolean;
   gridSize?: number;
@@ -6,19 +11,21 @@ interface CanvasEditorOptions {
 
 export class CanvasEditor {
   #root: HTMLElement;
-  #canvas: HTMLCanvasElement;
+  canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   #options: Required<CanvasEditorOptions>;
   #dpr = window.devicePixelRatio || 1;
   #width = 0;
   #height = 0;
 
+  handlers: CanvasHandler[] = [];
+
   constructor(root: HTMLElement, options: CanvasEditorOptions = {}) {
     if (!root) throw new Error("El elemento root HTML no existe");
     this.#root = root;
     this.#root.innerHTML = "";
-    this.#canvas = document.createElement("canvas");
-    this.#root.append(this.#canvas);
+    this.canvas = document.createElement("canvas");
+    this.#root.append(this.canvas);
 
     this.#options = {
       showGrid: options.showGrid ?? false,
@@ -26,14 +33,21 @@ export class CanvasEditor {
       gridColor: options.gridColor ?? "#6460bf",
     };
 
-    this.ctx = this.#canvas.getContext("2d")!;
+    this.ctx = this.canvas.getContext("2d")!;
     this.setupCanvas();
+    this.setupEventsHandlers();
     this.loop();
   }
 
   private setupCanvas() {
     this.resizeCanvas();
     window.addEventListener("resize", this.resizeCanvas.bind(this));
+  }
+
+  private setupEventsHandlers() {
+    const handles: CanvasHandlerConstructor[] = [];
+
+    this.handlers = handles.map((Handler) => new Handler(this));
   }
 
   private loop() {
@@ -51,10 +65,10 @@ export class CanvasEditor {
     this.#width = rect.width;
     this.#height = rect.height;
 
-    this.#canvas.width = Math.round(rect.width * this.#dpr);
-    this.#canvas.height = Math.round(rect.height * this.#dpr);
-    this.#canvas.style.width = `${rect.width}px`;
-    this.#canvas.style.height = `${rect.height}px`;
+    this.canvas.width = Math.round(rect.width * this.#dpr);
+    this.canvas.height = Math.round(rect.height * this.#dpr);
+    this.canvas.style.width = `${rect.width}px`;
+    this.canvas.style.height = `${rect.height}px`;
   }
 
   private renderGrid(): void {

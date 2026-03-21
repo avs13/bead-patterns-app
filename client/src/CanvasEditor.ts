@@ -9,6 +9,13 @@ interface CanvasEditorOptions {
   gridColor?: string;
 }
 
+export interface CanvasState {
+  x: number;
+  y: number;
+  zoom: number;
+  rotation: number;
+}
+
 export class CanvasEditor {
   #root: HTMLElement;
   canvas: HTMLCanvasElement;
@@ -17,6 +24,13 @@ export class CanvasEditor {
   #dpr = window.devicePixelRatio || 1;
   #width = 0;
   #height = 0;
+
+  state: CanvasState = {
+    x: 0,
+    y: 0,
+    zoom: 1,
+    rotation: 0,
+  };
 
   handlers: CanvasHandler[] = [];
 
@@ -53,9 +67,14 @@ export class CanvasEditor {
   private loop() {
     this.ctx.setTransform(this.#dpr, 0, 0, this.#dpr, 0, 0);
     this.ctx.clearRect(0, 0, this.#width, this.#height);
+    this.ctx.save();
+    this.ctx.translate(-this.state.x, -this.state.y);
+    this.ctx.rotate(this.state.rotation);
+    this.ctx.scale(this.state.zoom, this.state.zoom);
     if (this.#options.showGrid) {
       this.renderGrid();
     }
+    this.ctx.restore();
     requestAnimationFrame(this.loop.bind(this));
   }
 

@@ -1,6 +1,6 @@
 import { DragHandler } from "./handlers/DragCanvasHandler";
 import { PinchTransformHandler } from "./handlers/PinchTransformHandler";
-import { Action, Tool, type CanvasEditorOptions, type CanvasState } from "./types";
+import { Action, Tool, type CanvasEditorOptions, type CanvasElement, type CanvasState } from "./types";
 import type {
   CanvasHandler,
   CanvasHandlerConstructor,

@@ -1,5 +1,6 @@
-import type { CanvasEditor } from "../CanvasEditor";
 import type { CanvasHandler } from "./CanvasHandler";
+import type { CanvasEditor } from "../CanvasEditor";
+import { Action, Tool } from "../types";
 
 export class DragHandler implements CanvasHandler {
   canvasEditor: CanvasEditor;
@@ -21,12 +22,31 @@ export class DragHandler implements CanvasHandler {
   }
 
   private onPointerDown(e: PointerEvent) {
+    if (
+      this.canvasEditor.state.activeTool !== Tool.MOVE ||
+      this.canvasEditor.state.action !== Action.NONE
+    )
+      return;
     this.pointers.add(e.pointerId);
-    this.isDragging = this.pointers.size === 1;
+
+    if (this.pointers.size === 1) {
+      this.isDragging = true;
+    } else {
+      this.isDragging = false;
+      this.canvasEditor.state.action = Action.NONE;
+    }
   }
 
   private onPointerMove(e: PointerEvent) {
     if (!this.isDragging) return;
+    if (
+      this.canvasEditor.state.activeTool !== Tool.MOVE ||
+      (this.canvasEditor.state.action !== Action.NONE &&
+        this.canvasEditor.state.action !== Action.MOVE)
+    )
+      return;
+    this.canvasEditor.state.action = Action.MOVE;
+
     const deltaX = e.movementX;
     const deltaY = e.movementY;
     this.canvasEditor.state.x -= deltaX;
@@ -35,6 +55,8 @@ export class DragHandler implements CanvasHandler {
 
   private onPointerUp(e: PointerEvent) {
     this.pointers.delete(e.pointerId);
+    if (this.canvasEditor.state.action !== Action.MOVE) return;
+    this.canvasEditor.state.action = Action.NONE;
     if (this.pointers.size === 0) {
       this.isDragging = false;
     }

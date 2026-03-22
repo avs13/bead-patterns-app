@@ -1,4 +1,5 @@
 import type { CanvasEditor, CanvasState } from "../CanvasEditor";
+import { Action, Tool } from "../types";
 import type { CanvasHandler } from "./CanvasHandler";
 
 interface Vec2 {
@@ -10,7 +11,7 @@ export class PinchTransformHandler implements CanvasHandler {
   startTouch1: Vec2 | null = null;
   startTouch2: Vec2 | null = null;
   startPinchAngle: number | null = null;
-  startCanvasRotation : number| null = null;
+  startCanvasRotation: number | null = null;
   canvasEditor: CanvasEditor;
 
   constructor(canvasEditor: CanvasEditor) {
@@ -22,7 +23,12 @@ export class PinchTransformHandler implements CanvasHandler {
 
   onStart(e: TouchEvent) {
     if (e.touches.length !== 2) return;
-
+    if (
+      this.canvasEditor.state.activeTool !== Tool.MOVE ||
+      this.canvasEditor.state.action !== Action.NONE
+    )
+      return;
+    this.canvasEditor.state.action = Action.PINCH;
     const rect = this.canvasEditor.canvas.getBoundingClientRect();
     const t1 = e.touches[0];
     const t2 = e.touches[1];
@@ -38,11 +44,12 @@ export class PinchTransformHandler implements CanvasHandler {
       e.touches.length !== 2 ||
       !this.startTouch1 ||
       !this.startTouch2 ||
-      this.startPinchAngle == null
-      || this.startCanvasRotation == null
+      this.startPinchAngle == null ||
+      this.startCanvasRotation == null
     ) {
       return;
     }
+    if (this.canvasEditor.state.action !== Action.PINCH) return;
 
     const rect = this.canvasEditor.canvas.getBoundingClientRect();
     const t1 = e.touches[0];
@@ -71,7 +78,7 @@ export class PinchTransformHandler implements CanvasHandler {
       this.startCanvasRotation +
         this.angle(newPos1, newPos2) -
         this.startPinchAngle,
-    )!;
+    );
 
     const remainder = canvasAngle % (Math.PI / 2);
     if (remainder <= snapThreshold) {
@@ -97,6 +104,9 @@ export class PinchTransformHandler implements CanvasHandler {
   }
 
   onEnd() {
+    if (this.canvasEditor.state.action !== Action.PINCH) return;
+    this.canvasEditor.state.action = Action.NONE;
+
     this.startTouch1 = null;
     this.startTouch2 = null;
     this.startPinchAngle = null;
@@ -117,12 +127,11 @@ export class PinchTransformHandler implements CanvasHandler {
     return Math.atan2(b.y - a.y, b.x - a.x);
   }
 
-  
-   private normalize(angle: number): number {
+  private normalize(angle: number): number {
     const TWO_PI = Math.PI * 2;
     return ((angle % TWO_PI) + TWO_PI) % TWO_PI;
-   }
-  
+  }
+
   private screenToWorld(
     point: Vec2,
     state: CanvasState = this.canvasEditor.state,
@@ -160,7 +169,4 @@ export class PinchTransformHandler implements CanvasHandler {
       y: point.x * sin + point.y * cos,
     };
   }
-
-
- 
 }

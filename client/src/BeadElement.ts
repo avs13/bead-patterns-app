@@ -1,8 +1,8 @@
 import type { CanvasElement } from "./CanvasEditor";
 
 export class BeadElement implements CanvasElement {
-  readonly WIDTH = 13;
-  readonly HEIGHT = 16;
+  readonly WIDTH = 16;
+  readonly HEIGHT = 13;
   readonly CORNER_RATIO = 0.2;
   readonly CORNER_WALL_RATIO = 0.19;
 

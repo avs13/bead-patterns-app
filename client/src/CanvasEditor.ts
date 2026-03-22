@@ -18,6 +18,10 @@ export interface CanvasState {
   rotation: number;
 }
 
+export interface CanvasElement {
+  draw(ctx: CanvasRenderingContext2D): void;
+}
+
 export class CanvasEditor {
   #root: HTMLElement;
   canvas: HTMLCanvasElement;
@@ -76,6 +80,11 @@ export class CanvasEditor {
     if (this.#options.showGrid) {
       this.renderGrid();
     }
+
+    for (const element of this.elements) {
+      element.draw(this.ctx);
+    }
+
     this.ctx.restore();
     requestAnimationFrame(this.loop.bind(this));
   }

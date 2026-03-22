@@ -22,6 +22,7 @@ export enum Tool {
   SELECT = "select",
   DRAW = "draw",
   ERASE = "erase",
+  FILL = "fill",
 }
 
 export enum Action {

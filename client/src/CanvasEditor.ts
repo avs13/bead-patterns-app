@@ -1,6 +1,7 @@
 import { DragHandler } from "./handlers/DragCanvasHandler";
 import { PinchTransformHandler } from "./handlers/PinchTransformHandler";
 import { Action, Tool, type CanvasEditorOptions, type CanvasElement, type CanvasState } from "./types";
+import { ToolsComponent } from "./ToolsComponent";
 import type {
   CanvasHandler,
   CanvasHandlerConstructor,
@@ -32,6 +33,17 @@ export class CanvasEditor {
     this.#root.innerHTML = "";
     this.canvas = document.createElement("canvas");
     this.#root.append(this.canvas);
+
+    const toolsComponent = new ToolsComponent();
+    toolsComponent.activeTool = this.state.activeTool;
+
+    this.#root.append(toolsComponent);
+
+    toolsComponent.addEventListener("toolchange", (event) => {
+      const detail = (event as CustomEvent<{ tool: Tool }>).detail;
+      if (!detail?.tool) return;
+      this.state.activeTool = detail.tool;
+    });
 
     this.#options = {
       showGrid: options.showGrid ?? false,

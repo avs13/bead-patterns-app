@@ -3,6 +3,8 @@ export interface CanvasState {
   y: number;
   zoom: number;
   rotation: number;
+  activeTool: Tool;
+  action: Action;
 }
 
 export interface CanvasEditorOptions {
@@ -13,4 +15,19 @@ export interface CanvasEditorOptions {
 
 export interface CanvasElement {
   draw(ctx: CanvasRenderingContext2D): void;
+}
+
+export enum Tool {
+  MOVE = "move",
+  SELECT = "select",
+  DRAW = "draw",
+  ERASE = "erase",
+}
+
+export enum Action {
+  NONE,
+  MOVE,
+  PINCH,
+  DRAW,
+  ERASE,
 }

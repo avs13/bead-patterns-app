@@ -16,6 +16,8 @@ export class CanvasEditor {
     y: 0,
     zoom: 1,
     rotation: 0,
+    activeTool: Tool.MOVE,
+    action: Action.NONE,
   };
 
   handlers: CanvasHandler[] = [];

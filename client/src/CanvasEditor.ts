@@ -1,26 +1,6 @@
 import { DragHandler } from "./handlers/DragCanvasHandler";
-import {PinchTransformHandler} from "./handlers/PinchTransformHandler";
-import type {
-  CanvasHandler,
-  CanvasHandlerConstructor,
-} from "./handlers/CanvasHandler";
-
-interface CanvasEditorOptions {
-  showGrid?: boolean;
-  gridSize?: number;
-  gridColor?: string;
-}
-
-export interface CanvasState {
-  x: number;
-  y: number;
-  zoom: number;
-  rotation: number;
-}
-
-export interface CanvasElement {
-  draw(ctx: CanvasRenderingContext2D): void;
-}
+import { PinchTransformHandler } from "./handlers/PinchTransformHandler";
+import { Action, Tool, type CanvasEditorOptions, type CanvasState } from "./types";
 
 export class CanvasEditor {
   #root: HTMLElement;

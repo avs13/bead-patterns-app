@@ -1,4 +1,4 @@
-import type { CanvasElement } from "./CanvasEditor";
+import type { CanvasElement } from "./types";
 
 export class BeadElement implements CanvasElement {
   readonly WIDTH = 16;

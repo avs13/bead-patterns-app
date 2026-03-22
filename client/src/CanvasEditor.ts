@@ -1,6 +1,10 @@
 import { DragHandler } from "./handlers/DragCanvasHandler";
 import { PinchTransformHandler } from "./handlers/PinchTransformHandler";
 import { Action, Tool, type CanvasEditorOptions, type CanvasState } from "./types";
+import type {
+  CanvasHandler,
+  CanvasHandlerConstructor,
+} from "./handlers/CanvasHandler";
 
 export class CanvasEditor {
   #root: HTMLElement;

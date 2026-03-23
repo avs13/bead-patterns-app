@@ -42,7 +42,7 @@ export const canvasToWorld = (point: Vec2, state: CanvasState): Vec2 => {
 export const translationForAnchor = (
   worldPoint: Vec2,
   screenPoint: Vec2,
-  state:  Pick<CanvasState, "x" | "y" | "zoom" | "rotation">,
+  state: Pick<CanvasState, "x" | "y" | "zoom" | "rotation">,
 ): Vec2 => {
   const local = rotatePoint(
     { x: worldPoint.x * state.zoom, y: worldPoint.y * state.zoom },

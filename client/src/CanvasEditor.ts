@@ -1,5 +1,6 @@
 import { DragHandler } from "./handlers/DragCanvasHandler";
 import { PinchTransformHandler } from "./handlers/PinchTransformHandler";
+import { wheelZoomHandler } from "./handlers/wheelZoomHandler";
 import {
   Action,
   Tool,
@@ -73,6 +74,7 @@ export class CanvasEditor {
     const handles: CanvasHandlerConstructor[] = [
       DragHandler,
       PinchTransformHandler,
+      wheelZoomHandler,
     ];
 
     this.handlers = handles.map((Handler) => new Handler(this));

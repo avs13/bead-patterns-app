@@ -5,6 +5,8 @@ export interface CanvasState {
   rotation: number;
   activeTool: Tool;
   action: Action;
+  beadPalette: string[];
+  activeBead: string;
 }
 
 export type Vec2 = {

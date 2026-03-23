@@ -14,6 +14,7 @@ import type {
   CanvasHandlerConstructor,
 } from "./handlers/CanvasHandler";
 import { LoomElement } from "./LoomElement";
+import { DrawBeadHandler } from "./handlers/DrawBeadHandler";
 
 export class CanvasEditor {
   #root: HTMLElement;
@@ -31,6 +32,16 @@ export class CanvasEditor {
     rotation: 0,
     activeTool: Tool.MOVE,
     action: Action.NONE,
+    beadPalette: [
+      "#3b82f6",
+      "#0ea5e9",
+      "#ef4444",
+      "#f97316",
+      "#a855f7",
+      "#f59e0b",
+      "#22c55e",
+    ],
+    activeBead: "#3b82f6",
   };
 
   handlers: CanvasHandler[] = [];
@@ -76,6 +87,7 @@ export class CanvasEditor {
       DragHandler,
       PinchTransformHandler,
       wheelZoomHandler,
+      DrawBeadHandler,
     ];
 
     this.handlers = handles.map((Handler) => new Handler(this));

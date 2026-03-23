@@ -16,6 +16,7 @@ import type {
 import { LoomElement } from "./LoomElement";
 import { DrawBeadHandler } from "./handlers/DrawBeadHandler";
 import { EraseBeadHandler } from "./handlers/EraseBeadHandler";
+import { FillHandler } from "./handlers/FillHandler";
 
 export class CanvasEditor {
   #root: HTMLElement;
@@ -90,6 +91,7 @@ export class CanvasEditor {
       wheelZoomHandler,
       DrawBeadHandler,
       EraseBeadHandler,
+      FillHandler,
     ];
 
     this.handlers = handles.map((Handler) => new Handler(this));

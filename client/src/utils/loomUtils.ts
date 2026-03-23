@@ -65,3 +65,17 @@ export const findBeadAt = (elements: CanvasElement[], beadPoint: Vec2) =>
       element.x === beadPoint.x &&
       element.y === beadPoint.y,
   );
+
+/**
+ * Convierte coordenadas de celda (col, row) a coordenadas del mundo (x, y)
+ */
+export const cellToWorld = (
+  loom: LoomElement,
+  col: number,
+  row: number,
+): Vec2 => {
+  return {
+    x: loom.originX + col * loom.columnSpacing,
+    y: loom.originY + row * loom.rowSpacing,
+  };
+};

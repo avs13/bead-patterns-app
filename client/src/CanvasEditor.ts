@@ -13,6 +13,7 @@ import type {
   CanvasHandler,
   CanvasHandlerConstructor,
 } from "./handlers/CanvasHandler";
+import { LoomElement } from "./LoomElement";
 
 export class CanvasEditor {
   #root: HTMLElement;

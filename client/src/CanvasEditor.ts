@@ -1,6 +1,12 @@
 import { DragHandler } from "./handlers/DragCanvasHandler";
 import { PinchTransformHandler } from "./handlers/PinchTransformHandler";
-import { Action, Tool, type CanvasEditorOptions, type CanvasElement, type CanvasState } from "./types";
+import {
+  Action,
+  Tool,
+  type CanvasEditorOptions,
+  type CanvasElement,
+  type CanvasState,
+} from "./types";
 import { ToolsComponent } from "./ToolsComponent";
 import type {
   CanvasHandler,
@@ -26,6 +32,7 @@ export class CanvasEditor {
   };
 
   handlers: CanvasHandler[] = [];
+  elements: CanvasElement[] = [];
 
   constructor(root: HTMLElement, options: CanvasEditorOptions = {}) {
     if (!root) throw new Error("El elemento root HTML no existe");
@@ -63,7 +70,10 @@ export class CanvasEditor {
   }
 
   private setupEventsHandlers() {
-    const handles: CanvasHandlerConstructor[] = [DragHandler, PinchTransformHandler];
+    const handles: CanvasHandlerConstructor[] = [
+      DragHandler,
+      PinchTransformHandler,
+    ];
 
     this.handlers = handles.map((Handler) => new Handler(this));
   }

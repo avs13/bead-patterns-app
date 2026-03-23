@@ -76,6 +76,7 @@ export class CanvasEditor {
     this.ctx = this.canvas.getContext("2d")!;
     this.setupCanvas();
     this.setupEventsHandlers();
+    this.setupTouchGuards();
     this.loop();
   }
 
@@ -95,6 +96,22 @@ export class CanvasEditor {
     ];
 
     this.handlers = handles.map((Handler) => new Handler(this));
+  }
+
+  private setupTouchGuards() {
+    window.addEventListener(
+      "touchmove",
+      (e) => {
+        const target = e.target as Node | null;
+        if (
+          target &&
+          (target === this.canvas || this.canvas.contains(target))
+        ) {
+          e.preventDefault();
+        }
+      },
+      { passive: false },
+    );
   }
 
   private loop() {

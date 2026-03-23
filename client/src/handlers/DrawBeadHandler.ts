@@ -1,7 +1,7 @@
-import { Action, Tool, type Vec2 } from "../types";
+import { Action, Tool } from "../types";
 import type { CanvasHandler } from "./CanvasHandler";
-import { LoomElement } from "../LoomElement";
 import { BeadElement } from "../BeadElement";
+import { findBeadIndexAt, getBeadCellAt, getLoom } from "../utils/loomUtils";
 import type { CanvasEditor } from "../CanvasEditor";
 import { canvasToWorld, screenToCanvas } from "../utils/transformUtils";
 
@@ -43,10 +43,15 @@ export class DrawBeadHandler implements CanvasHandler {
     const rect = this.canvasEditor.canvas.getBoundingClientRect();
     const pos = screenToCanvas({ x: e.clientX, y: e.clientY }, rect);
     const worldPoint = canvasToWorld(pos, this.canvasEditor.state);
-    const hit = this.getBeadCellAt(worldPoint);
+    const loom = getLoom(this.canvasEditor.elements);
+    if (!loom) return;
+    const hit = getBeadCellAt(worldPoint, loom);
     if (!hit) return;
 
-    const beadIndex = this.findBeadIndexAt(hit.beadX, hit.beadY);
+    const beadIndex = findBeadIndexAt(this.canvasEditor.elements, {
+      x: hit.beadX,
+      y: hit.beadY,
+    });
 
     if (beadIndex !== -1) {
       (this.canvasEditor.elements[beadIndex] as BeadElement).color =
@@ -60,48 +65,6 @@ export class DrawBeadHandler implements CanvasHandler {
         y: hit.beadY,
         color: this.canvasEditor.state.activeBead,
       }),
-    );
-  }
-
-  private getBeadCellAt(point: Vec2) {
-    const loom = this.canvasEditor.elements.find(
-      (element): element is LoomElement => element instanceof LoomElement,
-    );
-
-    if (!loom) return null;
-
-    const columnSpacing = loom.BEAD_WIDTH + loom.SPACING;
-    const rowSpacing = loom.BEAD_HEIGHT + loom.SPACING;
-    const originX = loom.x + loom.FRAME_WIDTH + 1;
-    const originY = loom.y + loom.SPACING;
-    const maxX = originX + loom.columns * columnSpacing - loom.SPACING;
-    const maxY = originY + loom.rows * rowSpacing - loom.SPACING;
-
-    if (
-      point.x < originX ||
-      point.y < originY ||
-      point.x > maxX ||
-      point.y > maxY
-    ) {
-      return null;
-    }
-
-    const col = Math.floor((point.x - originX) / columnSpacing);
-    const row = Math.floor((point.y - originY) / rowSpacing);
-
-    if (col < 0 || row < 0 || col >= loom.columns || row >= loom.rows) {
-      return null;
-    }
-
-    const beadX = originX + col * columnSpacing;
-    const beadY = originY + row * rowSpacing;
-    return { beadX, beadY };
-  }
-
-  private findBeadIndexAt(x: number, y: number) {
-    return this.canvasEditor.elements.findIndex(
-      (element) =>
-        element instanceof BeadElement && element.x === x && element.y === y,
     );
   }
 }

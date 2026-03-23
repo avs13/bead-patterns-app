@@ -1,11 +1,12 @@
-import type { CanvasEditor, CanvasState } from "../CanvasEditor";
-import { Action, Tool } from "../types";
+import type { CanvasEditor } from "../CanvasEditor";
+import { Action, Tool, type Vec2 } from "../types";
 import type { CanvasHandler } from "./CanvasHandler";
-
-interface Vec2 {
-  x: number;
-  y: number;
-}
+import {
+  canvasToWorld,
+  screenToCanvas,
+  translationForAnchor,
+} from "../utils/transformUtils";
+import { angle, distance, normalizeAngle } from "../utils/vectorUtils";
 
 export class PinchTransformHandler implements CanvasHandler {
   startTouch1: Vec2 | null = null;
@@ -33,9 +34,9 @@ export class PinchTransformHandler implements CanvasHandler {
     const t1 = e.touches[0];
     const t2 = e.touches[1];
 
-    this.startTouch1 = this.toLocalPoint(t1, rect);
-    this.startTouch2 = this.toLocalPoint(t2, rect);
-    this.startPinchAngle = this.angle(this.startTouch1, this.startTouch2);
+    this.startTouch1 = screenToCanvas({ x: t1.clientX, y: t1.clientY }, rect);
+    this.startTouch2 = screenToCanvas({ x: t2.clientX, y: t2.clientY }, rect);
+    this.startPinchAngle = angle(this.startTouch1, this.startTouch2);
     this.startCanvasRotation = this.canvasEditor.state.rotation;
   }
 
@@ -57,15 +58,15 @@ export class PinchTransformHandler implements CanvasHandler {
 
     const prevState = { ...this.canvasEditor.state };
 
-    const newPos1 = this.toLocalPoint(t1, rect);
-    const newPos2 = this.toLocalPoint(t2, rect);
-    const initialDistance = this.distance(this.startTouch1, this.startTouch2);
-    const currentDistance = this.distance(newPos1, newPos2);
+    const newPos1 = screenToCanvas({ x: t1.clientX, y: t1.clientY }, rect);
+    const newPos2 = screenToCanvas({ x: t2.clientX, y: t2.clientY }, rect);
+    const initialDistance = distance(this.startTouch1, this.startTouch2);
+    const currentDistance = distance(newPos1, newPos2);
     const midpoint = {
       x: (newPos1.x + newPos2.x) / 2,
       y: (newPos1.y + newPos2.y) / 2,
     };
-    const anchorWorld = this.screenToWorld(midpoint, prevState);
+    const anchorWorld = canvasToWorld(midpoint, prevState);
 
     const scaleFactor = currentDistance / initialDistance;
     const nextScale = this.canvasEditor.state.zoom * scaleFactor;
@@ -74,10 +75,8 @@ export class PinchTransformHandler implements CanvasHandler {
 
     const snapThreshold = (5 * Math.PI) / 180; // ±5 grados de tolerancia
 
-    const canvasAngle = this.normalize(
-      this.startCanvasRotation +
-        this.angle(newPos1, newPos2) -
-        this.startPinchAngle,
+    const canvasAngle = normalizeAngle(
+      this.startCanvasRotation + angle(newPos1, newPos2) - this.startPinchAngle,
     );
 
     const remainder = canvasAngle % (Math.PI / 2);
@@ -91,7 +90,7 @@ export class PinchTransformHandler implements CanvasHandler {
       this.canvasEditor.state.rotation = canvasAngle;
     }
 
-    const nextTranslation = this.translationForAnchor(
+    const nextTranslation = translationForAnchor(
       anchorWorld,
       midpoint,
       this.canvasEditor.state,
@@ -110,63 +109,5 @@ export class PinchTransformHandler implements CanvasHandler {
     this.startTouch1 = null;
     this.startTouch2 = null;
     this.startPinchAngle = null;
-  }
-
-  private toLocalPoint(touch: Touch, rect: DOMRect) {
-    return {
-      x: touch.clientX - rect.left,
-      y: touch.clientY - rect.top,
-    };
-  }
-
-  private distance(a: Vec2, b: Vec2) {
-    return Math.hypot(b.x - a.x, b.y - a.y);
-  }
-
-  private angle(a: Vec2, b: Vec2) {
-    return Math.atan2(b.y - a.y, b.x - a.x);
-  }
-
-  private normalize(angle: number): number {
-    const TWO_PI = Math.PI * 2;
-    return ((angle % TWO_PI) + TWO_PI) % TWO_PI;
-  }
-
-  private screenToWorld(
-    point: Vec2,
-    state: CanvasState = this.canvasEditor.state,
-  ) {
-    const local = this.rotatePoint(
-      { x: point.x + state.x, y: point.y + state.y },
-      -state.rotation,
-    );
-    return {
-      x: local.x / state.zoom,
-      y: local.y / state.zoom,
-    };
-  }
-
-  private translationForAnchor(
-    worldPoint: Vec2,
-    screenPoint: Vec2,
-    state: CanvasState,
-  ) {
-    const local = this.rotatePoint(
-      { x: worldPoint.x * state.zoom, y: worldPoint.y * state.zoom },
-      state.rotation,
-    );
-    return {
-      x: local.x - screenPoint.x,
-      y: local.y - screenPoint.y,
-    };
-  }
-
-  private rotatePoint(point: Vec2, angle: number) {
-    const cos = Math.cos(angle);
-    const sin = Math.sin(angle);
-    return {
-      x: point.x * cos - point.y * sin,
-      y: point.x * sin + point.y * cos,
-    };
   }
 }

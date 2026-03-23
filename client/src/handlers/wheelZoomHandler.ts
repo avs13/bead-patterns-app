@@ -1,10 +1,9 @@
 import type { CanvasEditor } from "../CanvasEditor";
-import type { CanvasState } from "../types";
-
-interface Vec2 {
-  x: number;
-  y: number;
-}
+import {
+  canvasToWorld,
+  screenToCanvas,
+  translationForAnchor,
+} from "../utils/transformUtils";
 
 export class wheelZoomHandler {
   readonly ZOOM_DELTA = 1.15;
@@ -21,13 +20,13 @@ export class wheelZoomHandler {
     e.preventDefault();
 
     const rect = this.canvasEditor.canvas.getBoundingClientRect();
-    const pos = this.toLocalPoint(e, rect);
-    const anchor = this.screenToWorld(pos);
+    const pos = screenToCanvas({ x: e.clientX, y: e.clientY }, rect);
+    const anchor = canvasToWorld(pos, this.canvasEditor.state);
 
     this.canvasEditor.state.zoom *=
       e.deltaY < 0 ? this.ZOOM_DELTA : 1 / this.ZOOM_DELTA;
 
-    const nextTranslation = this.translationForAnchor(
+    const nextTranslation = translationForAnchor(
       anchor,
       pos,
       this.canvasEditor.state,
@@ -37,48 +36,4 @@ export class wheelZoomHandler {
     this.canvasEditor.state.y = nextTranslation.y;
   }
 
-  private screenToWorld(
-    point: Vec2,
-    state: CanvasState = this.canvasEditor.state,
-  ) {
-    const local = this.rotatePoint(
-      { x: point.x + state.x, y: point.y + state.y },
-      -state.rotation,
-    );
-    return {
-      x: local.x / state.zoom,
-      y: local.y / state.zoom,
-    };
-  }
-
-  private translationForAnchor(
-    worldPoint: Vec2,
-    screenPoint: Vec2,
-    state: CanvasState,
-  ) {
-    const local = this.rotatePoint(
-      { x: worldPoint.x * state.zoom, y: worldPoint.y * state.zoom },
-      state.rotation,
-    );
-    return {
-      x: local.x - screenPoint.x,
-      y: local.y - screenPoint.y,
-    };
-  }
-
-  private rotatePoint(point: Vec2, angle: number) {
-    const cos = Math.cos(angle);
-    const sin = Math.sin(angle);
-    return {
-      x: point.x * cos - point.y * sin,
-      y: point.x * sin + point.y * cos,
-    };
-  }
-
-  private toLocalPoint(touch: WheelEvent, rect: DOMRect) {
-    return {
-      x: touch.clientX - rect.left,
-      y: touch.clientY - rect.top,
-    };
-  }
 }

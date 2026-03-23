@@ -7,6 +7,11 @@ export interface CanvasState {
   action: Action;
 }
 
+export type Vec2 = {
+  x: number;
+  y: number;
+};
+
 export interface CanvasEditorOptions {
   showGrid?: boolean;
   gridSize?: number;

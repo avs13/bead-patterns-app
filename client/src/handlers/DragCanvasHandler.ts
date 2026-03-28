@@ -47,8 +47,16 @@ export class DragHandler implements CanvasHandler {
       return;
     this.canvasEditor.state.action = Action.MOVE;
 
-    const deltaX = e.movementX;
-    const deltaY = e.movementY;
+    let deltaX = e.movementX;
+    let deltaY = e.movementY;
+
+    const dpr = window.devicePixelRatio || 1;
+
+    if (dpr !== 1 && e.pointerType !== "touch") {
+      deltaX = deltaX / dpr;
+      deltaY = deltaY / dpr;
+    }
+
     this.canvasEditor.state.transform.x -= deltaX;
     this.canvasEditor.state.transform.y -= deltaY;
   }

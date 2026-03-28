@@ -12,19 +12,61 @@ export class LoomElement implements CanvasElement {
   width: number;
   height: number;
 
-  columns: number;
-  rows: number;
+  #columns: number;
+  #rows: number;
+  originX: number = 0;
+  originY: number = 0;
+  maxX: number = 0;
+  maxY: number = 0;
+  columnSpacing: number = 0;
+  rowSpacing: number = 0;
+
+  get columns() {
+    return this.#columns;
+  }
+
+  set columns(val: number) {
+    this.#columns = val;
+    this.updateGeometry();
+  }
+
+  get rows() {
+    return this.#rows;
+  }
+
+  set rows(val: number) {
+    this.#rows = val;
+    this.updateGeometry();
+  }
 
   constructor(data: { x: number; y: number; columns: number; rows: number }) {
     this.x = data.x;
     this.y = data.y;
-    this.columns = data.columns;
-    this.rows = data.rows;
+    this.#columns = data.columns;
+    this.#rows = data.rows;
     const beadAreaWidth =
       data.columns * this.BEAD_WIDTH + (data.columns - 1) * this.SPACING;
     const beadAreaHeight =
       data.rows * this.BEAD_HEIGHT +
       (data.rows - 1) * this.SPACING +
+      this.SPACING * 2;
+    this.width = beadAreaWidth + this.FRAME_WIDTH * 2 + this.SPACING;
+    this.height = beadAreaHeight;
+  }
+
+  private updateGeometry() {
+    this.columnSpacing = this.BEAD_WIDTH + this.SPACING;
+    this.rowSpacing = this.BEAD_HEIGHT + this.SPACING;
+    this.originX = this.x + this.FRAME_WIDTH + 1;
+    this.originY = this.y + this.SPACING;
+    this.maxX =
+      this.originX + this.#columns * this.columnSpacing - this.SPACING;
+    this.maxY = this.originY + this.#rows * this.rowSpacing - this.SPACING;
+    const beadAreaWidth =
+      this.#columns * this.BEAD_WIDTH + (this.#columns - 1) * this.SPACING;
+    const beadAreaHeight =
+      this.#rows * this.BEAD_HEIGHT +
+      (this.#rows - 1) * this.SPACING +
       this.SPACING * 2;
     this.width = beadAreaWidth + this.FRAME_WIDTH * 2 + this.SPACING;
     this.height = beadAreaHeight;

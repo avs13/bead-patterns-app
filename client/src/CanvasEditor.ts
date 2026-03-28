@@ -41,15 +41,7 @@ export class CanvasEditor {
     this.#root.append(this.canvas);
 
     const toolsComponent = new ToolsComponent();
-    toolsComponent.activeTool = this.state.activeTool;
-
     this.#root.append(toolsComponent);
-
-    toolsComponent.addEventListener("toolchange", (event) => {
-      const detail = (event as CustomEvent<{ tool: Tool }>).detail;
-      if (!detail?.tool) return;
-      this.state.activeTool = detail.tool;
-    });
 
     this.#options = {
       showGrid: options.showGrid ?? false,

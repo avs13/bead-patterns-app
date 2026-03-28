@@ -1,4 +1,6 @@
 import { html } from "./dom";
+import { effect } from "./libs/stateManager";
+import { editorStore } from "./store/store";
 import { Tool } from "./types";
 
 const PencilIcon = /* html */ `<svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -55,23 +57,11 @@ const tools = [
 ];
 
 export class ToolsComponent extends HTMLElement {
-  activeTool: Tool = Tool.SELECT;
-  
-  private handleToolChange = (event: Event) => {
-    const detail = (event as CustomEvent<{ tool: Tool }>).detail;
-    if (!detail?.tool || this.activeTool === detail.tool) return;
-    this.activeTool = detail.tool;
-    this.render();
-  };
-
   connectedCallback() {
-    window.addEventListener("toolchange", this.handleToolChange);
     this.render();
   }
 
-  disconnectedCallback() {
-    window.removeEventListener("toolchange", this.handleToolChange);
-  }
+  disconnectedCallback() {}
 
   render() {
     this.innerHTML = "";
@@ -79,38 +69,39 @@ export class ToolsComponent extends HTMLElement {
       <div
         class="fixed bg-amber-50/90 text-slate-800 shadow-lg rounded-xl px-2 py-2 portrait:bottom-4 portrait:left-1/2 portrait:-translate-x-1/2 landscape:top-1/2 landscape:left-4 landscape:-translate-y-1/2"
       >
-        <ul class="flex gap-2 portrait:flex-row landscape:flex-col">
-          ${tools
-            .map((tool) => {
-              const dataAttr = tool.tool ? `data-tool="${tool.tool}"` : "";
-              const isActive = tool.tool === this.activeTool;
-              const activeClass = isActive
-                ? "bg-amber-100 shadow-sm"
-                : "hover:bg-amber-100 active:bg-amber-200";
-              return `<li ${dataAttr} class="w-10 h-10 flex items-center justify-center rounded-lg transition cursor-pointer ${activeClass}">
-                <span class="text-slate-700">${tool.icon}</span>
-              </li>`;
-            })
-            .join("")}
-        </ul>
+        <ul class="flex gap-2 portrait:flex-row landscape:flex-col"></ul>
       </div>
     `);
 
-    this.querySelectorAll("[data-tool]").forEach((item) => {
+    effect(this.renderTools.bind(this));
+  }
+
+  renderTools() {
+    const toolListItems = tools.map((tool) => {
+      const activeClass =
+        tool.tool === editorStore.activeTool
+          ? "bg-amber-100 shadow-sm"
+          : "hover:bg-amber-100 active:bg-amber-200";
+
+      const item = html`<li
+        class="w-10 h-10 flex items-center justify-center rounded-lg transition cursor-pointer ${activeClass}"
+      >
+        <span class="text-slate-700">${tool.icon}</span>
+      </li>`;
+
       item.addEventListener("click", () => {
-        const toolValue = item.getAttribute("data-tool") as Tool | null;
-        if (!toolValue) return;
-        this.activeTool = toolValue;
-        this.render();
-        this.dispatchEvent(
-          new CustomEvent("toolchange", {
-            detail: { tool: toolValue },
-            bubbles: true,
-            composed: true,
-          }),
-        );
+        if (!tool.tool) return;
+        editorStore.activeTool = tool.tool;
       });
+
+      return item;
     });
+
+    const listElement = this.querySelector("ul");
+    if (listElement) {
+      listElement.innerHTML = "";
+      listElement.append(...toolListItems);
+    }
   }
 }
 

@@ -38,4 +38,5 @@ export enum Action {
   PINCH,
   DRAW,
   ERASE,
+  FILL,
 }

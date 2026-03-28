@@ -13,7 +13,6 @@ import type {
   CanvasHandler,
   CanvasHandlerConstructor,
 } from "./handlers/CanvasHandler";
-import { LoomElement } from "./LoomElement";
 import { DrawBeadHandler } from "./handlers/DrawBeadHandler";
 import { EraseBeadHandler } from "./handlers/EraseBeadHandler";
 import { FillHandler } from "./handlers/FillHandler";

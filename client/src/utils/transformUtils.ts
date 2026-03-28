@@ -24,7 +24,10 @@ export const rotatePoint = (point: Vec2, angle: number): Vec2 => {
 /**
  * Mapea un punto de canvas a coordenadas del mundo usando el estado actual.
  */
-export const canvasToWorld = (point: Vec2, state: CanvasState): Vec2 => {
+export const canvasToWorld = (
+  point: Vec2,
+  state: CanvasState["transform"],
+): Vec2 => {
   const local = rotatePoint(
     { x: point.x + state.x, y: point.y + state.y },
     -state.rotation,
@@ -42,7 +45,7 @@ export const canvasToWorld = (point: Vec2, state: CanvasState): Vec2 => {
 export const translationForAnchor = (
   worldPoint: Vec2,
   screenPoint: Vec2,
-  state: Pick<CanvasState, "x" | "y" | "zoom" | "rotation">,
+  state: CanvasState["transform"],
 ): Vec2 => {
   const local = rotatePoint(
     { x: worldPoint.x * state.zoom, y: worldPoint.y * state.zoom },

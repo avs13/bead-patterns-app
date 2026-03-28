@@ -37,7 +37,7 @@ export class PinchTransformHandler implements CanvasHandler {
     this.startTouch1 = screenToCanvas({ x: t1.clientX, y: t1.clientY }, rect);
     this.startTouch2 = screenToCanvas({ x: t2.clientX, y: t2.clientY }, rect);
     this.startPinchAngle = angle(this.startTouch1, this.startTouch2);
-    this.startCanvasRotation = this.canvasEditor.state.rotation;
+    this.startCanvasRotation = this.canvasEditor.state.transform.rotation;
   }
 
   onMove(e: TouchEvent) {
@@ -66,12 +66,12 @@ export class PinchTransformHandler implements CanvasHandler {
       x: (newPos1.x + newPos2.x) / 2,
       y: (newPos1.y + newPos2.y) / 2,
     };
-    const anchorWorld = canvasToWorld(midpoint, prevState);
+    const anchorWorld = canvasToWorld(midpoint, prevState.transform);
 
     const scaleFactor = currentDistance / initialDistance;
-    const nextScale = this.canvasEditor.state.zoom * scaleFactor;
+    const nextScale = this.canvasEditor.state.transform.zoom * scaleFactor;
 
-    this.canvasEditor.state.zoom = nextScale;
+    this.canvasEditor.state.transform.zoom = nextScale;
 
     const snapThreshold = (5 * Math.PI) / 180; // ±5 grados de tolerancia
 
@@ -82,21 +82,21 @@ export class PinchTransformHandler implements CanvasHandler {
     const remainder = canvasAngle % (Math.PI / 2);
     if (remainder <= snapThreshold) {
       const rotation = Math.floor(canvasAngle / (Math.PI / 2)) * (Math.PI / 2);
-      this.canvasEditor.state.rotation = rotation;
+      this.canvasEditor.state.transform.rotation = rotation;
     } else if (remainder >= Math.PI / 2 - snapThreshold) {
       const rotation = Math.ceil(canvasAngle / (Math.PI / 2)) * (Math.PI / 2);
-      this.canvasEditor.state.rotation = rotation;
+      this.canvasEditor.state.transform.rotation = rotation;
     } else {
-      this.canvasEditor.state.rotation = canvasAngle;
+      this.canvasEditor.state.transform.rotation = canvasAngle;
     }
 
     const nextTranslation = translationForAnchor(
       anchorWorld,
       midpoint,
-      this.canvasEditor.state,
+      this.canvasEditor.state.transform,
     );
-    this.canvasEditor.state.x = nextTranslation.x;
-    this.canvasEditor.state.y = nextTranslation.y;
+    this.canvasEditor.state.transform.x = nextTranslation.x;
+    this.canvasEditor.state.transform.y = nextTranslation.y;
 
     this.startTouch1 = newPos1;
     this.startTouch2 = newPos2;

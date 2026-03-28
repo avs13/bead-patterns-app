@@ -32,14 +32,14 @@ export class FillHandler implements CanvasHandler {
   private fillFromEvent(e: PointerEvent) {
     const rect = this.canvasEditor.canvas.getBoundingClientRect();
     const pos = screenToCanvas({ x: e.clientX, y: e.clientY }, rect);
-    const worldPoint = canvasToWorld(pos, this.canvasEditor.state);
-    const loom = getLoom(this.canvasEditor.elements);
+    const worldPoint = canvasToWorld(pos, this.canvasEditor.state.transform);
+    const loom = getLoom(this.canvasEditor.document.elements);
     if (!loom) return;
     const hit = getBeadCellAt(worldPoint, loom);
     if (!hit) return;
 
     const startPos = cellToWorld(loom, hit.col, hit.row);
-    const startBead = findBeadAt(this.canvasEditor.elements, startPos);
+    const startBead = findBeadAt(this.canvasEditor.document.elements, startPos);
     const replacement = this.canvasEditor.state.activeBead;
 
     const isEmptyFill = !startBead;
@@ -69,10 +69,10 @@ export class FillHandler implements CanvasHandler {
       }
 
       const pos = cellToWorld(loom, current.col, current.row);
-      const bead = findBeadAt(this.canvasEditor.elements, pos);
+      const bead = findBeadAt(this.canvasEditor.document.elements, pos);
       if (isEmptyFill) {
         if (bead) continue;
-        this.canvasEditor.elements.push(
+        this.canvasEditor.document.elements.push(
           new BeadElement({
             x: pos.x,
             y: pos.y,

@@ -21,19 +21,18 @@ export class wheelZoomHandler {
 
     const rect = this.canvasEditor.canvas.getBoundingClientRect();
     const pos = screenToCanvas({ x: e.clientX, y: e.clientY }, rect);
-    const anchor = canvasToWorld(pos, this.canvasEditor.state);
+    const anchor = canvasToWorld(pos, this.canvasEditor.state.transform);
 
-    this.canvasEditor.state.zoom *=
+    this.canvasEditor.state.transform.zoom *=
       e.deltaY < 0 ? this.ZOOM_DELTA : 1 / this.ZOOM_DELTA;
 
     const nextTranslation = translationForAnchor(
       anchor,
       pos,
-      this.canvasEditor.state,
+      this.canvasEditor.state.transform,
     );
 
-    this.canvasEditor.state.x = nextTranslation.x;
-    this.canvasEditor.state.y = nextTranslation.y;
+    this.canvasEditor.state.transform.x = nextTranslation.x;
+    this.canvasEditor.state.transform.y = nextTranslation.y;
   }
-
 }

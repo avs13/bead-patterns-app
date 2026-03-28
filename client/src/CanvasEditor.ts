@@ -2,11 +2,11 @@ import { DragHandler } from "./handlers/DragCanvasHandler";
 import { PinchTransformHandler } from "./handlers/PinchTransformHandler";
 import { wheelZoomHandler } from "./handlers/wheelZoomHandler";
 import {
-  Action,
   Tool,
   type CanvasEditorOptions,
   type CanvasElement,
   type CanvasState,
+  type DocumentState,
 } from "./types";
 import { ToolsComponent } from "./ToolsComponent";
 import type {
@@ -16,6 +16,7 @@ import type {
 import { DrawBeadHandler } from "./handlers/DrawBeadHandler";
 import { EraseBeadHandler } from "./handlers/EraseBeadHandler";
 import { FillHandler } from "./handlers/FillHandler";
+import { documentStore, editorStore } from "./store/store";
 
 export class CanvasEditor {
   #root: HTMLElement;
@@ -26,24 +27,8 @@ export class CanvasEditor {
   #width = 0;
   #height = 0;
 
-  state: CanvasState = {
-    x: 0,
-    y: 0,
-    zoom: 1,
-    rotation: 0,
-    activeTool: Tool.MOVE,
-    action: Action.NONE,
-    beadPalette: [
-      "#3b82f6",
-      "#0ea5e9",
-      "#ef4444",
-      "#f97316",
-      "#a855f7",
-      "#f59e0b",
-      "#22c55e",
-    ],
-    activeBead: "#3b82f6",
-  };
+  state: CanvasState = editorStore;
+  document: DocumentState = documentStore;
 
   handlers: CanvasHandler[] = [];
   elements: CanvasElement[] = [];
@@ -117,9 +102,9 @@ export class CanvasEditor {
     this.ctx.setTransform(this.#dpr, 0, 0, this.#dpr, 0, 0);
     this.ctx.clearRect(0, 0, this.#width, this.#height);
     this.ctx.save();
-    this.ctx.translate(-this.state.x, -this.state.y);
-    this.ctx.rotate(this.state.rotation);
-    this.ctx.scale(this.state.zoom, this.state.zoom);
+    this.ctx.translate(-this.state.transform.x, -this.state.transform.y);
+    this.ctx.rotate(this.state.transform.rotation);
+    this.ctx.scale(this.state.transform.zoom, this.state.transform.zoom);
     if (this.#options.showGrid) {
       this.renderGrid();
     }

@@ -1,12 +1,20 @@
 export interface CanvasState {
-  x: number;
-  y: number;
-  zoom: number;
-  rotation: number;
+  transform: {
+    x: number;
+    y: number;
+    zoom: number;
+    rotation: number;
+  };
   activeTool: Tool;
   action: Action;
-  beadPalette: string[];
   activeBead: string;
+}
+
+export interface DocumentState {
+  id: string;
+  name: string;
+  beadPalette: string[];
+  elements: CanvasElement[];
 }
 
 export type Vec2 = {

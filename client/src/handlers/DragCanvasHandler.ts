@@ -49,8 +49,8 @@ export class DragHandler implements CanvasHandler {
 
     const deltaX = e.movementX;
     const deltaY = e.movementY;
-    this.canvasEditor.state.x -= deltaX;
-    this.canvasEditor.state.y -= deltaY;
+    this.canvasEditor.state.transform.x -= deltaX;
+    this.canvasEditor.state.transform.y -= deltaY;
   }
 
   private onPointerUp(e: PointerEvent) {

@@ -4,13 +4,18 @@ let currentEffect: (() => void) | null = null;
 let inBatch: boolean = false;
 const proxyStack = new WeakMap<object, object>();
 const pendingEffects = new Set<() => void>();
+const excluded = new WeakSet<object>();
 
 export const proxy = <T extends object>(state: T): T => {
   const effectDependencies = new Map<keyof T, Set<() => void>>();
+
   if (proxyStack.has(state)) return proxyStack.get(state) as T;
 
   const _proxy = new Proxy(state, {
     set(target, key, value) {
+      if (target[key as keyof T] === value) {
+        return true;
+      }
       const result = Reflect.set(target, key, value);
       if (result) {
         if (inBatch) {
@@ -33,7 +38,11 @@ export const proxy = <T extends object>(state: T): T => {
         effectDependencies.get(key as keyof T)?.add(currentEffect);
       }
       const response = Reflect.get(target, key, value);
-      if (typeof response === "object" && response !== null) {
+      if (
+        typeof response === "object" &&
+        response !== null &&
+        !excluded.has(response)
+      ) {
         return proxy(response);
       }
       return response;
@@ -76,11 +85,15 @@ export const computed = <T extends Record<string, () => unknown>>(
   return computedState;
 };
 
-
 export const batch = (callback: () => void) => {
   inBatch = true;
   callback();
   inBatch = false;
-    pendingEffects.forEach((effect) => effect());
-    pendingEffects.clear();
+  pendingEffects.forEach((effect) => effect());
+  pendingEffects.clear();
+};
+
+export const set = <T extends object>(value: T) => {
+  excluded.add(value);
+  return value;
 };

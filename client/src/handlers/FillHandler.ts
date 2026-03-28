@@ -1,6 +1,6 @@
 import { Action, Tool } from "../types";
 import type { CanvasHandler } from "./CanvasHandler";
-import { BeadElement } from "../BeadElement";
+import { BeadElement } from "../elements/BeadElement";
 import type { CanvasEditor } from "../CanvasEditor";
 import { canvasToWorld, screenToCanvas } from "../utils/transformUtils";
 import {

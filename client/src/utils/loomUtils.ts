@@ -1,6 +1,6 @@
 import type { CanvasElement, Vec2 } from "../types";
-import { BeadElement } from "../BeadElement";
-import { LoomElement } from "../LoomElement";
+import { BeadElement } from "../elements/BeadElement";
+import { LoomElement } from "../elements/LoomElement";
 
 /**
  * Devuelve el primer LoomElement encontrado en el array de elementos.

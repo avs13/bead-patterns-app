@@ -2,13 +2,12 @@ import { DragHandler } from "./handlers/DragCanvasHandler";
 import { PinchTransformHandler } from "./handlers/PinchTransformHandler";
 import { wheelZoomHandler } from "./handlers/wheelZoomHandler";
 import {
-  Tool,
   type CanvasEditorOptions,
   type CanvasElement,
   type CanvasState,
   type DocumentState,
 } from "./types";
-import { ToolsComponent } from "./ToolsComponent";
+import { ToolsComponent } from "./components/ToolsComponent";
 import type {
   CanvasHandler,
   CanvasHandlerConstructor,

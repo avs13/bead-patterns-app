@@ -9,8 +9,8 @@ export class LoomElement implements CanvasElement {
   x: number;
   y: number;
 
-  width: number;
-  height: number;
+  width: number = 0;
+  height: number = 0;
 
   #columns: number;
   #rows: number;
@@ -44,14 +44,7 @@ export class LoomElement implements CanvasElement {
     this.y = data.y;
     this.#columns = data.columns;
     this.#rows = data.rows;
-    const beadAreaWidth =
-      data.columns * this.BEAD_WIDTH + (data.columns - 1) * this.SPACING;
-    const beadAreaHeight =
-      data.rows * this.BEAD_HEIGHT +
-      (data.rows - 1) * this.SPACING +
-      this.SPACING * 2;
-    this.width = beadAreaWidth + this.FRAME_WIDTH * 2 + this.SPACING;
-    this.height = beadAreaHeight;
+    this.updateGeometry();
   }
 
   private updateGeometry() {

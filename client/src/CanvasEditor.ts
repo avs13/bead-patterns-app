@@ -17,6 +17,7 @@ import { FillHandler } from "./handlers/FillHandler";
 import { documentStore, editorStore } from "./store/store";
 import { BeadPaletteComponent } from "./components/BeadPaletteComponent";
 import { TopPanelComponent } from "./components/TopPanelComponent";
+import { CursorHandler } from "./handlers/CursorHandler";
 
 export class CanvasEditor {
   #root: HTMLElement;
@@ -66,6 +67,7 @@ export class CanvasEditor {
 
   private setupEventsHandlers() {
     const handles: CanvasHandlerConstructor[] = [
+      CursorHandler,
       DragHandler,
       PinchTransformHandler,
       wheelZoomHandler,

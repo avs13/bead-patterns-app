@@ -2,6 +2,7 @@ import { html } from "../dom";
 import { effect } from "../libs/stateManager";
 import { documentStore, editorStore } from "../store/store";
 import { BeadSwatchComponent } from "./BeadSwatchComponent";
+import { ColorPickerComponent } from "./ColorPickerComponent";
 
 const PlusIcon = /* html */ `<svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <path d="M12 5v14" />
@@ -9,8 +10,9 @@ const PlusIcon = /* html */ `<svg viewBox="0 0 24 24" class="w-4 h-4" fill="none
 </svg>`;
 
 export class BeadPaletteComponent extends HTMLElement {
-  colorPicker!: HTMLInputElement;
   beadPaletteList!: HTMLDivElement;
+  colorPickerComponent!: ColorPickerComponent;
+  dialogComponent!: HTMLDialogElement;
 
   cleanupFns: Array<() => void> = [];
 
@@ -27,31 +29,40 @@ export class BeadPaletteComponent extends HTMLElement {
 
     this.append(
       html` <div
-        class="fixed bg-amber-50/90 text-slate-800 shadow-lg rounded-xl px-1 py-1 top-1/2 right-4 -translate-y-1/2"
+        class="bg-amber-50/90 text-slate-800 rounded-xl top-1/2 right-4 fixed px-1 py-1 -translate-y-1/2 shadow-lg"
       >
-        <div class="flex flex-col items-center gap-1">
+        <div
+          class="flex flex-col items-center gap-1"
+          style="anchor-name: --anchor-add-bead"
+        >
           <div
             class="flex gap-1 flex-nowrap max-h-[60vh] max-w-[70vw] flex-col overflow-y-auto touch-pan-y p-1"
             id="bead-palette-list"
           ></div>
-          <label
-            for="color-picker"
-            class="w-11 h-11 inline-flex flex-none items-center justify-center rounded-lg transition hover:bg-amber-100 active:bg-amber-200"
+          <button
+            id="add-color-btn"
+            class="w-11 h-11 hover:bg-amber-100 active:bg-amber-200 inline-flex items-center justify-center flex-none transition rounded-lg cursor-pointer"
+            commandfor="color-picker"
+            command="show-modal"
           >
             ${PlusIcon}
-          </label>
-          <p></p>
-          <input
+          </button>
+          <dialog
+            closedby="any"
             id="color-picker"
-            type="color"
-            value="${pickerValue}"
-            class="hidden"
-          />
+            class="backdrop:hidden fixed inset-auto mr-4 overflow-visible translate-y-10 bg-transparent border-0"
+            style="position-anchor: --anchor-add-bead; bottom: anchor(bottom); right: anchor(left);"
+            open
+          >
+            <color-picker
+              id="custom-color-picker"
+              value="${pickerValue}"
+            ></color-picker>
+          </dialog>
         </div>
-      </div>`,
+      </div>`
     );
 
-    this.colorPicker = this.querySelector<HTMLInputElement>("input")!;
     this.beadPaletteList =
       this.querySelector<HTMLDivElement>("#bead-palette-list")!;
     this.colorPickerComponent = this.querySelector("#custom-color-picker")!;
@@ -93,7 +104,7 @@ export class BeadPaletteComponent extends HTMLElement {
     }
     editorStore.activeBead = color;
     this.dialogComponent.close();
-  };
+  }
 }
 
 customElements.define("bead-palette", BeadPaletteComponent);

@@ -23,7 +23,7 @@ export class DragHandler implements CanvasHandler {
 
   private onPointerDown(e: PointerEvent) {
     if (
-      this.canvasEditor.state.activeTool !== Tool.MOVE ||
+      (this.canvasEditor.state.activeTool !== Tool.MOVE && !e.ctrlKey) ||
       this.canvasEditor.state.action !== Action.NONE
     )
       return;
@@ -31,6 +31,9 @@ export class DragHandler implements CanvasHandler {
 
     if (this.pointers.size === 1) {
       this.isDragging = true;
+      if (this.canvasEditor.state.activeTool !== Tool.MOVE) {
+        this.canvasEditor.state.action = Action.MOVE;
+      }
     } else {
       this.isDragging = false;
       this.canvasEditor.state.action = Action.NONE;
@@ -40,9 +43,8 @@ export class DragHandler implements CanvasHandler {
   private onPointerMove(e: PointerEvent) {
     if (!this.isDragging) return;
     if (
-      this.canvasEditor.state.activeTool !== Tool.MOVE ||
-      (this.canvasEditor.state.action !== Action.NONE &&
-        this.canvasEditor.state.action !== Action.MOVE)
+      this.canvasEditor.state.action !== Action.NONE &&
+      this.canvasEditor.state.action !== Action.MOVE
     )
       return;
     this.canvasEditor.state.action = Action.MOVE;

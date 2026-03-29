@@ -52,7 +52,6 @@ export class BeadPaletteComponent extends HTMLElement {
             id="color-picker"
             class="backdrop:hidden fixed inset-auto mr-4 overflow-visible translate-y-10 bg-transparent border-0"
             style="position-anchor: --anchor-add-bead; bottom: anchor(bottom); right: anchor(left);"
-            open
           >
             <color-picker
               id="custom-color-picker"

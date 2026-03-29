@@ -54,22 +54,25 @@ export class BeadPaletteComponent extends HTMLElement {
     this.colorPicker = this.querySelector<HTMLInputElement>("input")!;
     this.beadPaletteList =
       this.querySelector<HTMLDivElement>("#bead-palette-list")!;
+    this.colorPickerComponent = this.querySelector("#custom-color-picker")!;
+    this.dialogComponent = this.querySelector("dialog")!;
 
-    if (!this.colorPicker || !this.beadPaletteList) {
+    if (
+      !this.beadPaletteList ||
+      !this.colorPickerComponent ||
+      !this.dialogComponent
+    ) {
       throw new Error(
-        "No se pudieron encontrar los elementos necesarios en el DOM",
+        "No se pudieron encontrar los elementos necesarios en el DOM"
       );
     }
 
     this.cleanupFns.push(effect(this.renderPaletteList.bind(this)));
 
-    this.cleanupFns.push(
-      effect(() => {
-        this.colorPicker.value = editorStore.activeBead;
-      }),
+    this.colorPickerComponent.addEventListener(
+      "color-change",
+      this.onAddColor.bind(this)
     );
-
-    this.colorPicker.addEventListener("change", this.onAddColor.bind(this));
   }
 
   renderPaletteList() {
@@ -82,15 +85,14 @@ export class BeadPaletteComponent extends HTMLElement {
     container.append(...beadSwatches);
   }
 
-  onAddColor = (e: Event) => {
-    const { target } = e;
-    if (!(target instanceof HTMLInputElement)) return;
-    const color = target.value;
+  onAddColor() {
+    const color = this.colorPickerComponent.value;
     if (!color) return;
     if (!documentStore.beadPalette.includes(color)) {
       documentStore.beadPalette = [...documentStore.beadPalette, color];
     }
     editorStore.activeBead = color;
+    this.dialogComponent.close();
   };
 }
 

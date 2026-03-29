@@ -13,24 +13,24 @@ export class ModalNewFileComponent extends HTMLElement {
     this.innerHTML = "";
     this.append(
       html`<dialog
-        class="bg-amber-50/90 text-slate-800 rounded-xl p-6 backdrop:bg-neutral-700/90 mx-auto mt-20 relative"
+        class="bg-amber-50/90 text-slate-800 rounded-xl backdrop:bg-neutral-700/90 relative p-6 mx-auto mt-20"
         id="new-proyect-modal"
         closedby="any"
       >
         <button
-          class="absolute top-0 right-2 text-2xl"
+          class="right-2 absolute top-0 text-2xl"
           commandfor="new-proyect-modal"
           command="close"
         >
           ×
         </button>
         <form>
-          <h2 class="text-xl font-semibold mb-4 text-center">
+          <h2 class="mb-4 text-xl font-semibold text-center">
             Crear una nuevo proyecto
           </h2>
 
           <div class="grid grid-cols-2 gap-2 space-y-2">
-            <label class="col-span-2 flex flex-col gap-1 font-medium">
+            <label class="flex flex-col col-span-2 gap-1 font-medium">
               Nombre del proyecto
               <input
                 type="string"
@@ -39,7 +39,7 @@ export class ModalNewFileComponent extends HTMLElement {
                 min="1"
               />
             </label>
-            <label class="col-span-1 flex flex-col gap-1 font-medium"
+            <label class="flex flex-col col-span-1 gap-1 font-medium"
               >Columnas
               <input
                 type="number"
@@ -50,7 +50,7 @@ export class ModalNewFileComponent extends HTMLElement {
                 max="100"
               />
             </label>
-            <label class="col-span-1 flex flex-col gap-1 font-medium"
+            <label class="flex flex-col col-span-1 gap-1 font-medium"
               >Filas
               <input
                 type="number"
@@ -65,19 +65,19 @@ export class ModalNewFileComponent extends HTMLElement {
 
           <div
             id="error-message"
-            class="bg-red-100 text-red-700 rounded-lg p-2 mb-2 text-sm hidden"
+            class="hidden p-2 mb-2 text-sm text-red-700 bg-red-100 rounded-lg"
           >
             El nombre del proyecto es requerido
           </div>
 
           <button
             type="submit"
-            class="p-2 rounded-lg bg-amber-500/90 shadow-lg transition hover:bg-amber-600/90 active:bg-amber-200 w-full"
+            class="bg-amber-500/90 hover:bg-amber-600/90 active:bg-amber-200 w-full p-2 transition rounded-lg shadow-lg"
           >
             Crear
           </button>
         </form>
-      </dialog>`,
+      </dialog>`
     );
 
     const form = this.querySelector("form") as HTMLFormElement;

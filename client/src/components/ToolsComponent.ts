@@ -67,9 +67,9 @@ export class ToolsComponent extends HTMLElement {
     this.innerHTML = "";
     this.append(html`
       <div
-        class="fixed bg-amber-50/90 text-slate-800 shadow-lg rounded-xl px-2 py-2 portrait:bottom-4 portrait:left-1/2 portrait:-translate-x-1/2 landscape:top-1/2 landscape:left-4 landscape:-translate-y-1/2"
+        class="bg-amber-50/90 text-slate-800 rounded-xl portrait:bottom-4 portrait:left-1/2 portrait:-translate-x-1/2 landscape:top-1/2 landscape:left-4 landscape:-translate-y-1/2 fixed px-2 py-2 shadow-lg"
       >
-        <ul class="flex gap-2 portrait:flex-row landscape:flex-col"></ul>
+        <ul class="portrait:flex-row landscape:flex-col flex gap-2"></ul>
       </div>
     `);
 
@@ -84,7 +84,7 @@ export class ToolsComponent extends HTMLElement {
           : "hover:bg-amber-100 active:bg-amber-200";
 
       const item = html`<li
-        class="w-10 h-10 flex items-center justify-center rounded-lg transition cursor-pointer ${activeClass}"
+        class="${activeClass} flex items-center justify-center w-10 h-10 transition rounded-lg cursor-pointer"
       >
         <span class="text-slate-700">${tool.icon}</span>
       </li>`;

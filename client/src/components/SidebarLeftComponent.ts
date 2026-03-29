@@ -14,22 +14,22 @@ export class SidebarLeftComponent extends HTMLElement {
   render() {
     this.innerHTML = "";
     this.append(html`
-      <div class="z-10 fixed top-4 left-4 flex gap-4 items-center">
+      <div class="top-4 left-4 fixed z-10 flex items-center gap-4">
         <div
-          class="z-10 fixed inset-0 bg-gray-700/50 transition-opacity duration-300 opacity-0 pointer-events-none"
+          class="bg-gray-700/50 fixed inset-0 z-10 transition-opacity duration-300 opacity-0 pointer-events-none"
           id="backdrop-sidebar"
         ></div>
         <sidebar
-          class="flex flex-col z-10 fixed top-0 left-0 h-full w-64 bg-amber-50 transition-transform duration-300 -translate-x-full"
+          class="bg-amber-50 fixed top-0 left-0 z-10 flex flex-col w-64 h-full transition-transform duration-300 -translate-x-full"
           id="sidebar"
         >
-          <div class="p-3 border-b border-slate-200">
+          <div class="border-slate-200 p-3 border-b">
             <span class="font-semibold">Proyectos</span>
           </div>
-          <div class="overflow-y-auto grow" id="files-list-sidebar"></div>
+          <div class="grow overflow-y-auto" id="files-list-sidebar"></div>
 
-          <div class="px-4 py-3 border-t border-slate-200">
-            <p class="text-xs text-slate-400 text-center">
+          <div class="border-slate-200 px-4 py-3 border-t">
+            <p class="text-slate-400 text-xs text-center">
               Powered by odbustillo
             </p>
           </div>

@@ -39,15 +39,15 @@ export class TopPanelComponent extends HTMLElement {
   render() {
     this.innerHTML = "";
     this.append(html`
-      <div class="z-10 fixed top-4 left-4 flex gap-4 items-center">
+      <div class="top-4 left-4 fixed z-10 flex items-center gap-4">
         <button
           id="btn-sidebar-toggle"
-          class="p-2 rounded-lg bg-amber-50/90 shadow transition hover:bg-amber-100 active:bg-amber-200"
+          class="bg-amber-50/90 hover:bg-amber-100 active:bg-amber-200 p-2 transition rounded-lg shadow"
         >
           ${LeftPanelIcon}
         </button>
         <button
-          class="p-2 rounded-lg bg-amber-500/90 shadow transition hover:bg-amber-600/90 active:bg-amber-200"
+          class="bg-amber-500/90 hover:bg-amber-600/90 active:bg-amber-200 p-2 transition rounded-lg shadow"
           id="btn-new"
           commandfor="new-proyect-modal"
           command="show-modal"
@@ -62,7 +62,7 @@ export class TopPanelComponent extends HTMLElement {
           ${SaveIcon}
           <span id="save-label">Guardar</span>
         </button>
-        <h1 id="doc-name" class="font-semibold text-sm"></h1>
+        <h1 id="doc-name" class="text-sm font-semibold"></h1>
         <modal-new-file></modal-new-file>
         <sidebar-left></sidebar-left>
       </div>

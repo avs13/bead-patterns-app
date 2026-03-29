@@ -17,6 +17,7 @@ import { EraseBeadHandler } from "./handlers/EraseBeadHandler";
 import { FillHandler } from "./handlers/FillHandler";
 import { documentStore, editorStore } from "./store/store";
 import { BeadPaletteComponent } from "./components/BeadPaletteComponent";
+import { TopPanelComponent } from "./components/TopPanelComponent";
 
 export class CanvasEditor {
   #root: HTMLElement;
@@ -42,9 +43,10 @@ export class CanvasEditor {
 
     const toolsComponent = new ToolsComponent();
     const beadPaletteComponent = new BeadPaletteComponent();
-
+    const topPanelComponent = new TopPanelComponent();
     this.#root.append(toolsComponent);
     this.#root.append(beadPaletteComponent);
+    this.#root.append(topPanelComponent);
 
     this.#options = {
       showGrid: options.showGrid ?? false,

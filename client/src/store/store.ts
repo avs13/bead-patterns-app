@@ -6,7 +6,7 @@ export const editorStore = proxy<CanvasState>({
   transform: { x: 0, y: 0, zoom: 1, rotation: 0 },
   activeTool: Tool.DRAW,
   action: Action.NONE,
-  activeBead: "#3b82f6",
+  activeBead: "",
 });
 
 export const documentStore = proxy<DocumentState>({
@@ -14,4 +14,8 @@ export const documentStore = proxy<DocumentState>({
   name: "",
   beadPalette: [],
   elements: set([]),
+});
+
+export const uiStore = proxy({
+  isSidebarOpen: false,
 });

@@ -3,6 +3,7 @@ import { BeadElement } from "../elements/BeadElement";
 import { set } from "../libs/stateManager";
 import { documentStore, editorStore } from "../store/store";
 import { beadToImageUrl } from "../utils/beadToImageUtils";
+import type { ColorPickerComponent } from "./ColorPickerComponent";
 
 const TrashIcon = /* html */ `<svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <path d="M10 11v6"/>
@@ -28,7 +29,8 @@ export class BeadSwatchComponent extends HTMLElement {
   color: string;
   buttonElement!: HTMLButtonElement;
   buttonDeleteElement!: HTMLButtonElement;
-  inputColorElement!: HTMLButtonElement;
+  colorPickerComponent!: ColorPickerComponent;
+  dialogComponent!: HTMLDialogElement;
   popoverElement!: HTMLDivElement;
   startTime: number = 0;
 
@@ -72,12 +74,14 @@ export class BeadSwatchComponent extends HTMLElement {
             ${PaletteIcon} ${this.color}
           </span>
 
-          <label
+          <button
             class="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-amber-50 active:bg-amber-100 transition-colors"
+            commandfor="color-picker-${colorId}"
+            command="show-modal"
           >
             ${EditIcon} Cambiar
             <input type="color" value="${this.color}" class="hidden" />
-          </label>
+          </button>
           <button
             class="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 active:bg-red-100 transition-colors delete-bead"
           >
@@ -85,11 +89,24 @@ export class BeadSwatchComponent extends HTMLElement {
           </button>
         </div>
       </div>
+
+      <dialog
+        closedby="any"
+        id="color-picker-${colorId}"
+        class="backdrop:hidden fixed inset-auto mr-4 overflow-visible translate-y-10 bg-transparent border-0"
+        style="position-anchor: --anchor-add-bead; bottom: anchor(bottom); right: anchor(left);"
+      >
+        <color-picker
+          id="custom-color-picker"
+          value="${this.color}"
+        ></color-picker>
+      </dialog>
     `);
 
     this.buttonElement = this.querySelector("button")!;
     this.buttonDeleteElement = this.querySelector(".delete-bead")!;
-    this.inputColorElement = this.querySelector("input[type='color']")!;
+    this.colorPickerComponent = this.querySelector("color-picker")!;
+    this.dialogComponent = this.querySelector("dialog")!;
     this.popoverElement = this.querySelector("[popover]")!;
 
     this.buttonElement.addEventListener(
@@ -106,8 +123,8 @@ export class BeadSwatchComponent extends HTMLElement {
       this.deleteBead.bind(this)
     );
 
-    this.inputColorElement.addEventListener(
-      "change",
+    this.colorPickerComponent.addEventListener(
+      "color-change",
       this.updateBeadColor.bind(this)
     );
   }
@@ -147,7 +164,7 @@ export class BeadSwatchComponent extends HTMLElement {
   }
 
   updateBeadColor() {
-    const newColor = this.inputColorElement.value;
+    const newColor = this.colorPickerComponent.value;
     const hasColor = documentStore.beadPalette.some(
       (color) => color === newColor
     );
@@ -159,6 +176,8 @@ export class BeadSwatchComponent extends HTMLElement {
 
     documentStore.beadPalette[indexOf] = newColor;
     editorStore.activeBead = newColor;
+    this.dialogComponent.close();
+
     (
       documentStore.elements.filter(
         (element) =>

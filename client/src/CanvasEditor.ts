@@ -3,7 +3,6 @@ import { PinchTransformHandler } from "./handlers/PinchTransformHandler";
 import { wheelZoomHandler } from "./handlers/wheelZoomHandler";
 import {
   type CanvasEditorOptions,
-  type CanvasElement,
   type CanvasState,
   type DocumentState,
 } from "./types";
@@ -32,7 +31,6 @@ export class CanvasEditor {
   document: DocumentState = documentStore;
 
   handlers: CanvasHandler[] = [];
-  elements: CanvasElement[] = [];
 
   constructor(root: HTMLElement, options: CanvasEditorOptions = {}) {
     if (!root) throw new Error("El elemento root HTML no existe");
@@ -106,7 +104,7 @@ export class CanvasEditor {
       this.renderGrid();
     }
 
-    for (const element of this.elements) {
+    for (const element of this.document.elements) {
       element.draw(this.ctx);
     }
 

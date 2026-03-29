@@ -1,7 +1,7 @@
 import { html } from "../dom";
 import { effect } from "../libs/stateManager";
 import { documentStore, editorStore } from "../store/store";
-import { beadToImageUrl } from "../utils/beadToImageUtils";
+import { BeadSwatchComponent } from "./BeadSwatchComponent";
 
 const PlusIcon = /* html */ `<svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <path d="M12 5v14" />
@@ -73,27 +73,13 @@ export class BeadPaletteComponent extends HTMLElement {
   }
 
   renderPaletteList() {
-    const beadList = documentStore.beadPalette.map((color) => {
-      const isActive = color === editorStore.activeBead;
-      const activeClass = isActive ? "outline-2 outline-amber-400" : "";
-      const dataUrl = beadToImageUrl(color);
-      const button = html`<button
-        data-color="${color}"
-        class="w-9 inline-flex justify-center rounded-lg transition cursor-pointer ${activeClass}"
-        title="${color}"
-      >
-        <img src="${dataUrl}" />
-      </button>`;
-
-      button.addEventListener("click", () => {
-        editorStore.activeBead = color;
-      });
-      return button;
+    const beadSwatches = documentStore.beadPalette.map((color) => {
+      return new BeadSwatchComponent(color);
     });
 
     const container = this.querySelector("#bead-palette-list")!;
     container.innerHTML = "";
-    container.append(...beadList);
+    container.append(...beadSwatches);
   }
 
   onAddColor = (e: Event) => {

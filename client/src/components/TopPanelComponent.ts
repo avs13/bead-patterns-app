@@ -3,6 +3,7 @@ import { effect } from "../libs/stateManager";
 import { documentStore, uiStore } from "../store/store";
 import "./SidebarLeftComponent";
 import "./ModalNewFileComponent";
+import { saveDocument } from "../store/actions";
 
 const LeftPanelIcon = /* html */ `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <rect width="18" height="18" x="3" y="3" rx="2" />
@@ -26,6 +27,7 @@ export class TopPanelComponent extends HTMLElement {
   buttonSidebarElement!: HTMLButtonElement;
   buttonNewElement!: HTMLButtonElement;
   buttonSaveFile!: HTMLButtonElement;
+  buttonSaveLabel!: HTMLButtonElement;
   fileNameElement!: HTMLElement;
 
   connectedCallback() {
@@ -70,17 +72,19 @@ export class TopPanelComponent extends HTMLElement {
 
     this.buttonSidebarElement = this.querySelector("#btn-sidebar-toggle")!;
     this.buttonSaveFile = this.querySelector("#btn-save")!;
+    this.buttonSaveLabel = this.querySelector("#save-label")!;
     this.buttonNewElement = this.querySelector("#btn-new")!;
     this.fileNameElement = this.querySelector("#doc-name")!;
 
     if (
       !this.buttonSidebarElement ||
       !this.buttonSaveFile ||
+      !this.buttonSaveLabel ||
       !this.buttonNewElement ||
       !this.fileNameElement
     ) {
       throw new Error(
-        "No se pudieron encontrar los elementos necesarios en el DOM",
+        "No se pudieron encontrar los elementos necesarios en el DOM"
       );
     }
 
@@ -99,7 +103,7 @@ export class TopPanelComponent extends HTMLElement {
           this.buttonNewElement.classList.add("hidden");
           this.buttonSaveFile.classList.remove("hidden");
         }
-      }),
+      })
     );
 
     this.cleanupFns.push(
@@ -107,12 +111,16 @@ export class TopPanelComponent extends HTMLElement {
         this.fileNameElement.textContent = documentStore.name
           ? documentStore.name
           : "";
-      }),
+      })
     );
   }
 
   onSave() {
-    // TODO: Implementar guardado de el documento
+    if (!documentStore.id || !documentStore.name) return;
+    this.buttonSaveLabel.textContent = "Guardando...";
+     saveDocument().finally(() => {
+      this.buttonSaveLabel.textContent = "Guardar";
+    });
   }
 }
 

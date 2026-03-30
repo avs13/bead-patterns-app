@@ -1,8 +1,5 @@
 import { html } from "../dom";
-import { LoomElement } from "../elements/LoomElement";
-import { batch, set } from "../libs/stateManager";
-import { documentStore, editorStore } from "../store/store";
-//import { createNewDocument } from "../store/store";
+import { applyCenteredTransform, createDocument } from "../store/actions";
 
 export class ModalNewFileComponent extends HTMLElement {
   connectedCallback() {
@@ -102,19 +99,17 @@ export class ModalNewFileComponent extends HTMLElement {
       return this.showError("Las columnas y filas deben ser números válidos");
     }
 
-    batch(() => {
-      const id = crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2);
-      const loom = new LoomElement({ x: 0, y: 0, columns: cols, rows: rows });
-      batch(() => {
-        documentStore.id = id;
-        documentStore.name = name;
-        documentStore.elements = set([loom]);
-        documentStore.beadPalette = ["#3b82f6"];
-        editorStore.activeBead = "#3b82f6";
-      });
-
-      // TODO: implementar centrado del loom
+    createDocument({
+      name,
+      cols,
+      rows,
     });
+    
+    const appRect = document.querySelector("#app")?.getBoundingClientRect();
+    const width = appRect?.width || window.innerWidth;
+    const height = appRect?.height || window.innerHeight;
+
+    applyCenteredTransform(width, height);
 
     const dialogElement = this.querySelector("dialog") as HTMLDialogElement;
     dialogElement.close();
@@ -122,7 +117,7 @@ export class ModalNewFileComponent extends HTMLElement {
 
   showError(message: string) {
     const errorMessageElement = this.querySelector(
-      "#error-message",
+      "#error-message"
     ) as HTMLElement;
     errorMessageElement.classList.remove("hidden");
     errorMessageElement.textContent = message;

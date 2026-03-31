@@ -1,8 +1,10 @@
-import { Action, Tool } from "../types";
+import { Action, Tool, HistoryAction, type BeadDrawDelta } from "../types";
 import type { CanvasHandler } from "./CanvasHandler";
 import { findBeadIndexAt, getBeadCellAt, getLoom } from "../utils/loomUtils";
 import type { CanvasEditor } from "../CanvasEditor";
 import { canvasToWorld, screenToCanvas } from "../utils/transformUtils";
+import { historyPush } from "../store/actions";
+import type { BeadElement } from "../elements/BeadElement";
 
 export class EraseBeadHandler implements CanvasHandler {
   canvasEditor: CanvasEditor;
@@ -11,19 +13,22 @@ export class EraseBeadHandler implements CanvasHandler {
     this.canvasEditor = canvasEditor;
     canvasEditor.canvas.addEventListener(
       "pointerdown",
-      this.onPointerDown.bind(this),
+      this.onPointerDown.bind(this)
     );
     canvasEditor.canvas.addEventListener(
       "pointermove",
-      this.onPointerMove.bind(this),
+      this.onPointerMove.bind(this)
     );
     window.addEventListener("pointerup", this.onPointerUp.bind(this));
   }
+
+  private currentStroke: BeadDrawDelta[] = [];
 
   private onPointerDown(e: PointerEvent) {
     if (this.canvasEditor.state.action !== Action.NONE) return;
     if (this.canvasEditor.state.activeTool !== Tool.ERASE) return;
     this.canvasEditor.state.action = Action.ERASE;
+    this.currentStroke = [];
     this.eraseBeadEvent(e);
   }
 
@@ -36,6 +41,13 @@ export class EraseBeadHandler implements CanvasHandler {
   private onPointerUp() {
     if (this.canvasEditor.state.action !== Action.ERASE) return;
     this.canvasEditor.state.action = Action.NONE;
+    if (this.currentStroke.length > 0) {
+      historyPush({
+        action: HistoryAction.DRAW,
+        state: this.currentStroke,
+      });
+      this.currentStroke = [];
+    }
   }
 
   private eraseBeadEvent(e: PointerEvent) {
@@ -53,6 +65,22 @@ export class EraseBeadHandler implements CanvasHandler {
     });
 
     if (beadIndex === -1) return;
+
+    const bead = this.canvasEditor.document.elements[beadIndex] as BeadElement;
+
+    const existingDelta = this.currentStroke.find(
+      (d) => d.x === hit.beadX && d.y === hit.beadY
+    );
+
+    if (!existingDelta) {
+      this.currentStroke.push({
+        x: hit.beadX,
+        y: hit.beadY,
+        prevColor: bead.color,
+        newColor: null,
+      });
+    }
+
     this.canvasEditor.document.elements.splice(beadIndex, 1);
   }
 }

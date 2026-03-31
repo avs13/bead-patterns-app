@@ -1,4 +1,4 @@
-import { Action, Tool } from "../types";
+import { Action, Tool, HistoryAction, type BeadDrawDelta } from "../types";
 import type { CanvasHandler } from "./CanvasHandler";
 import { BeadElement } from "../elements/BeadElement";
 import type { CanvasEditor } from "../CanvasEditor";
@@ -9,6 +9,7 @@ import {
   getBeadCellAt,
   getLoom,
 } from "../utils/loomUtils";
+import { historyPush } from "../store/actions";
 
 export class FillHandler implements CanvasHandler {
   canvasEditor: CanvasEditor;
@@ -17,7 +18,7 @@ export class FillHandler implements CanvasHandler {
     this.canvasEditor = canvasEditor;
     canvasEditor.canvas.addEventListener(
       "pointerdown",
-      this.onPointerDown.bind(this),
+      this.onPointerDown.bind(this)
     );
   }
 
@@ -48,6 +49,7 @@ export class FillHandler implements CanvasHandler {
 
     // Algoritmo de flood fill
     const visited = new Set<string>();
+    const changes: BeadDrawDelta[] = [];
 
     const queue: Array<{ col: number; row: number }> = [
       { col: hit.col, row: hit.row },
@@ -72,15 +74,27 @@ export class FillHandler implements CanvasHandler {
       const bead = findBeadAt(this.canvasEditor.document.elements, pos);
       if (isEmptyFill) {
         if (bead) continue;
+        changes.push({
+          x: pos.x,
+          y: pos.y,
+          prevColor: null,
+          newColor: replacement,
+        });
         this.canvasEditor.document.elements.push(
           new BeadElement({
             x: pos.x,
             y: pos.y,
             color: replacement,
-          }),
+          })
         );
       } else {
         if (!bead || bead.color !== targetColor) continue;
+        changes.push({
+          x: pos.x,
+          y: pos.y,
+          prevColor: bead.color,
+          newColor: replacement,
+        });
         bead.color = replacement;
       }
 
@@ -88,8 +102,15 @@ export class FillHandler implements CanvasHandler {
         { col: current.col + 1, row: current.row },
         { col: current.col - 1, row: current.row },
         { col: current.col, row: current.row + 1 },
-        { col: current.col, row: current.row - 1 },
+        { col: current.col, row: current.row - 1 }
       );
+    }
+
+    if (changes.length > 0) {
+      historyPush({
+        action: HistoryAction.DRAW,
+        state: changes,
+      });
     }
   }
 }

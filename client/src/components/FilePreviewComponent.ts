@@ -1,6 +1,11 @@
 import { html } from "../dom";
 import type { FileMeta } from "../storage/fileStorage";
-import { deleteDocument, loadFilesStore, openDocument } from "../store/actions";
+import {
+  applyCenteredTransform,
+  deleteDocument,
+  loadFilesStore,
+  openDocument,
+} from "../store/actions";
 
 const VerticalEllipsisIcon = /* html */ `<svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <circle cx="12" cy="12" r="1"/>
@@ -144,7 +149,11 @@ export class FilePreviewComponent extends HTMLElement {
   async onOpen(e: MouseEvent) {
     const target = e.target as HTMLElement;
     if (target.closest(".btn-dots")) return;
-    openDocument(this.file.id);
+    await openDocument(this.file.id);
+    const appRect = document.querySelector("#app")?.getBoundingClientRect();
+    const width = appRect?.width || window.innerWidth;
+    const height = appRect?.height || window.innerHeight;
+    applyCenteredTransform(width, height);
   }
 }
 

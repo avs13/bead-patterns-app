@@ -1,5 +1,5 @@
 import type { CanvasEditor } from "../CanvasEditor";
-import { Action, Tool, type Vec2 } from "../types";
+import { Action, Tool, type Vec2, MIN_ZOOM, MAX_ZOOM } from "../types";
 import type { CanvasHandler } from "./CanvasHandler";
 import {
   canvasToWorld,
@@ -69,14 +69,17 @@ export class PinchTransformHandler implements CanvasHandler {
     const anchorWorld = canvasToWorld(midpoint, prevState.transform);
 
     const scaleFactor = currentDistance / initialDistance;
-    const nextScale = this.canvasEditor.state.transform.zoom * scaleFactor;
+    const nextScale = Math.max(
+      MIN_ZOOM,
+      Math.min(this.canvasEditor.state.transform.zoom * scaleFactor, MAX_ZOOM)
+    );
 
     this.canvasEditor.state.transform.zoom = nextScale;
 
-    const snapThreshold = (5 * Math.PI) / 180; // ±5 grados de tolerancia
+    const snapThreshold = (8 * Math.PI) / 180; // ±5 grados de tolerancia
 
     const canvasAngle = normalizeAngle(
-      this.startCanvasRotation + angle(newPos1, newPos2) - this.startPinchAngle,
+      this.startCanvasRotation + angle(newPos1, newPos2) - this.startPinchAngle
     );
 
     const remainder = canvasAngle % (Math.PI / 2);
@@ -93,7 +96,7 @@ export class PinchTransformHandler implements CanvasHandler {
     const nextTranslation = translationForAnchor(
       anchorWorld,
       midpoint,
-      this.canvasEditor.state.transform,
+      this.canvasEditor.state.transform
     );
     this.canvasEditor.state.transform.x = nextTranslation.x;
     this.canvasEditor.state.transform.y = nextTranslation.y;

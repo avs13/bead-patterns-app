@@ -6,6 +6,7 @@ const STORE_CONTENT = "files_content";
 export interface FileMeta {
   id: string;
   name: string;
+  thumbnail: string;
   createdAt: number;
   updatedAt: number;
 }
@@ -35,6 +36,7 @@ export async function saveFile(
   const fullMeta: FileMeta = {
     id: meta.id,
     name: meta.name,
+    thumbnail: meta.thumbnail,
     createdAt: existingMeta?.createdAt ?? meta.createdAt ?? now,
     updatedAt: now,
   };
@@ -112,6 +114,7 @@ export async function renameFile(id: string, newName: string): Promise<void> {
 
   const updated: FileMeta = {
     ...existing,
+    thumbnail: existing.thumbnail || "",
     name: newName,
     updatedAt: Date.now(),
   };

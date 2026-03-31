@@ -11,6 +11,7 @@ import {
   type SerializedElement,
 } from "../storage/fileStorage";
 import type { CanvasElement, DocumentState } from "../types";
+import { documentToThumbnailUrl } from "../utils/documentToImageUtils";
 import { translationForAnchor } from "../utils/transformUtils";
 import { documentStore, editorStore, filesStore } from "./store";
 
@@ -37,10 +38,13 @@ export const createDocument = ({
 export const saveDocument = async () => {
   if (!documentStore.id || !documentStore.name) return;
   const elementsSerialized = elementsToSerialized(documentStore);
+  const thumbnail = documentToThumbnailUrl((documentStore.elements));
+
   await saveFile(
     {
       id: documentStore.id,
       name: documentStore.name,
+      thumbnail,
     },
     {
       elements: elementsSerialized,

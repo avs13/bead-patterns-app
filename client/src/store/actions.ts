@@ -38,7 +38,7 @@ export const createDocument = ({
 export const saveDocument = async () => {
   if (!documentStore.id || !documentStore.name) return;
   const elementsSerialized = elementsToSerialized(documentStore);
-  const thumbnail = documentToThumbnailUrl((documentStore.elements));
+  const thumbnail = documentToThumbnailUrl(documentStore.elements);
 
   await saveFile(
     {
@@ -82,6 +82,29 @@ export const renameDocument = async (id: string, newName: string) => {
   if (documentStore.id === id) {
     documentStore.name = newName;
   }
+
+  loadFilesStore();
+};
+
+export const cloneDocument = async (id: string) => {
+  const meta = await loadFileMeta(id);
+  const content = await loadFileContent(id);
+  if (!content || !meta) return;
+
+  const newId = crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2);
+  const newName = `${meta.name} (copia)`;
+
+  await saveFile(
+    {
+      id: newId,
+      name: newName,
+      thumbnail: meta.thumbnail || "",
+    },
+    {
+      elements: content.elements,
+      beadPalette: content.beadPalette,
+    }
+  );
 
   loadFilesStore();
 };

@@ -5,6 +5,7 @@ import {
   deleteDocument,
   loadFilesStore,
   openDocument,
+  cloneDocument,
 } from "../store/actions";
 
 const VerticalEllipsisIcon = /* html */ `<svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -26,12 +27,19 @@ const EditIcon = /* html */ `<svg viewBox="0 0 24 24" class="w-4 h-4" fill="none
   <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/>
 </svg>`;
 
+const CopyIcon = /* html */ `<svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+</svg>`;
+
 export class FilePreviewComponent extends HTMLElement {
   file: FileMeta;
   activeId: string;
   confirmDeletePopover!: HTMLElement;
   fileRowElement!: HTMLElement;
   deleteButton!: HTMLElement;
+  cloneConfirmButton!: HTMLElement;
+  confirmClonePopover!: HTMLElement;
 
   constructor(file: FileMeta, activeId: string) {
     super();
@@ -51,9 +59,18 @@ export class FilePreviewComponent extends HTMLElement {
         id="file-row-${id}"
         class="${isActive
           ? "bg-amber-100"
-          : "hover:bg-amber-100/50 active:bg-amber-100"} border-amber-100 relative flex items-center gap-2 px-4 py-3 transition-colors border-b"
+          : "hover:bg-amber-100/50 active:bg-amber-100"} border-amber-100 relative flex items-center gap-3 px-4 py-3 transition-colors border-b cursor-pointer"
       >
-        <div class="grow">
+        <div
+          class="shrink-0 bg-white/50 border-amber-200/50 flex items-center justify-center w-12 h-12 p-1 overflow-hidden border rounded"
+        >
+          <img
+            src="${this.file.thumbnail}"
+            class="drop-shadow-sm object-contain max-w-full max-h-full"
+            alt="thumbnail"
+          />
+        </div>
+        <div class="grow overflow-hidden">
           <p class="file-name text-sm font-medium text-gray-800 truncate">
             ${this.file.name}
           </p>
@@ -82,12 +99,50 @@ export class FilePreviewComponent extends HTMLElement {
           ${EditIcon} Renombrar
         </button>
         <button
+          class="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-amber-50 active:bg-amber-100 transition-colors"
+          commandfor="clone-file-${id}"
+          command="toggle-popover"
+        >
+          ${CopyIcon} Duplicar
+        </button>
+        <button
           class="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 active:bg-red-100 transition-colors"
           commandfor="delete-file-${id}"
           command="toggle-popover"
         >
           ${TrashIcon} Eliminar
         </button>
+
+        <div
+          id="clone-file-${id}"
+          popover
+          class="bg-amber-50/90 text-slate-800 rounded-xl shadow-xl backdrop:bg-neutral-900/50 relative p-6 mx-auto mt-40 max-w-sm w-[90vw]"
+          open
+        >
+          <div class="text-center">
+            <h3 class="mb-3 text-xl font-bold">
+              ¿Deseas duplicar este archivo?
+            </h3>
+            <p class="text-slate-600 mb-8 font-medium">
+              Esto creará una copia de ${this.file.name}.
+            </p>
+            <div class="flex justify-end gap-4">
+              <button
+                commandfor="clone-file-${id}"
+                command="hide-popover"
+                class="bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl px-4 py-2 font-semibold transition-colors shadow-sm"
+              >
+                Cancelar
+              </button>
+              <button
+                id="clone-confirm-btn-${id}"
+                class="bg-amber-500 hover:bg-amber-600 active:bg-amber-700 px-4 py-2 font-semibold text-white transition-colors rounded-lg shadow-sm"
+              >
+                Duplicar
+              </button>
+            </div>
+          </div>
+        </div>
 
         <div
           id="delete-file-${id}"
@@ -125,9 +180,12 @@ export class FilePreviewComponent extends HTMLElement {
     this.deleteButton = this.querySelector(`#delete-btn-${id}`)!;
     this.confirmDeletePopover = this.querySelector(`#delete-file-${id}`)!;
     this.fileRowElement = this.querySelector(`#file-row-${id}`)!;
+    this.cloneConfirmButton = this.querySelector(`#clone-confirm-btn-${id}`)!;
+    this.confirmClonePopover = this.querySelector(`#clone-file-${id}`)!;
 
     this.deleteButton.addEventListener("click", this.onDelete.bind(this));
     this.fileRowElement.addEventListener("click", this.onOpen.bind(this));
+    this.cloneConfirmButton.addEventListener("click", this.onClone.bind(this));
   }
 
   formatDate(ts: number): string {
@@ -144,6 +202,16 @@ export class FilePreviewComponent extends HTMLElement {
   onDelete() {
     this.confirmDeletePopover.hidePopover();
     deleteDocument(this.file.id).then(() => loadFilesStore());
+  }
+
+  onClone(e: Event) {
+    e.stopPropagation();
+    this.confirmClonePopover.hidePopover();
+    const popover = this.querySelector(
+      `#mypopover-${this.file.id}`
+    ) as HTMLElement;
+    if (popover) popover.hidePopover();
+    cloneDocument(this.file.id);
   }
 
   async onOpen(e: MouseEvent) {

@@ -18,6 +18,7 @@ import { documentStore, editorStore } from "./store/store";
 import { BeadPaletteComponent } from "./components/BeadPaletteComponent";
 import { TopPanelComponent } from "./components/TopPanelComponent";
 import { CursorHandler } from "./handlers/CursorHandler";
+import { ShortcutsHandler } from "./handlers/ShorcutsHandler";
 
 export class CanvasEditor {
   #root: HTMLElement;
@@ -74,6 +75,7 @@ export class CanvasEditor {
       DrawBeadHandler,
       EraseBeadHandler,
       FillHandler,
+      ShortcutsHandler
     ];
 
     this.handlers = handles.map((Handler) => new Handler(this));

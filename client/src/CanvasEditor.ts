@@ -37,7 +37,7 @@ export class CanvasEditor {
   constructor(root: HTMLElement, options: CanvasEditorOptions = {}) {
     if (!root) throw new Error("El elemento root HTML no existe");
     this.#root = root;
-    this.#root.innerHTML = "";
+    this.#root.classList.add("bg-[#f7f1e8]");
     this.canvas = document.createElement("canvas");
     this.#root.append(this.canvas);
 

@@ -7,5 +7,5 @@ const app = document.querySelector<HTMLDivElement>("#app");
 if (!app) throw new Error("Falta un contenedor principal para el canvas");
 
 new CanvasEditor(app, {
-  showGrid: true,
+  showGrid: false,
 });

@@ -59,7 +59,7 @@ export class FilePreviewComponent extends HTMLElement {
         id="file-row-${id}"
         class="${isActive
           ? "bg-amber-100"
-          : "hover:bg-amber-100/50 active:bg-amber-100"} border-amber-100 relative flex items-center gap-3 px-4 py-3 transition-colors border-b cursor-pointer"
+          : "hover:bg-amber-100/5"} border-amber-100 relative flex items-center gap-3 px-4 py-3 transition-colors border-b cursor-pointer"
       >
         <div
           class="shrink-0 bg-white/50 border-amber-200/50 flex items-center justify-center w-12 h-12 p-1 overflow-hidden border rounded"

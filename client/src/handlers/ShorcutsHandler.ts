@@ -1,6 +1,7 @@
 import type { CanvasHandler } from "./CanvasHandler";
 import type { CanvasEditor } from "../CanvasEditor";
 import { Action, Tool } from "../types";
+import { historyRedo, historyUndo } from "../store/actions";
 
 export class ShortcutsHandler implements CanvasHandler {
   canvasEditor: CanvasEditor;
@@ -25,6 +26,14 @@ export class ShortcutsHandler implements CanvasHandler {
     {
       key: "r",
       action: () => (this.canvasEditor.state.activeTool = Tool.FILL),
+    },
+    {
+      key: "ctrl+z",
+      action: () => historyUndo(),
+    },
+    {
+      key: "ctrl+shift+z|ctrl+y",
+      action: () => historyRedo(),
     },
   ];
 

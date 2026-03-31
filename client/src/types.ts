@@ -58,3 +58,50 @@ export enum Action {
   ERASE,
   FILL,
 }
+
+export enum HistoryAction {
+  DRAW,
+  PALETTE_COLOR_CHANGE,
+  PALETTE_COLOR_REMOVE,
+}
+
+export interface HistoryState {
+  undoStack: History[];
+  redoStack: History[];
+}
+
+export interface BeadDrawDelta {
+  x: number;
+  y: number;
+  prevColor: string | null;
+  newColor: string | null;
+}
+
+export interface DrawHistory {
+  action: HistoryAction.DRAW;
+  state: BeadDrawDelta[];
+}
+
+export interface PaletteColorChangeHistory {
+  action: HistoryAction.PALETTE_COLOR_CHANGE;
+  state: {
+    oldColor: string;
+    newColor: string;
+    paletteIndex: number;
+    beadDeltas: BeadDrawDelta[];
+  };
+}
+
+export interface PaletteColorRemoveHistory {
+  action: HistoryAction.PALETTE_COLOR_REMOVE;
+  state: {
+    color: string;
+    paletteIndex: number;
+    beadDeltas: BeadDrawDelta[];
+  };
+}
+
+export type History =
+  | DrawHistory
+  | PaletteColorChangeHistory
+  | PaletteColorRemoveHistory;

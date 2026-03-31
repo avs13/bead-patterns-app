@@ -10,10 +10,17 @@ import {
   saveFile,
   type SerializedElement,
 } from "../storage/fileStorage";
-import type { CanvasElement, DocumentState } from "../types";
+import {
+  HistoryAction,
+  type CanvasElement,
+  type DocumentState,
+  type History,
+  type BeadDrawDelta,
+} from "../types";
 import { documentToThumbnailUrl } from "../utils/documentToImageUtils";
+import { findBeadIndexAt } from "../utils/loomUtils";
 import { translationForAnchor } from "../utils/transformUtils";
-import { documentStore, editorStore, filesStore } from "./store";
+import { documentStore, editorStore, filesStore, historyStore } from "./store";
 
 export const createDocument = ({
   name,
@@ -32,6 +39,7 @@ export const createDocument = ({
     documentStore.elements = set([loom]);
     documentStore.beadPalette = ["#3b82f6"];
     editorStore.activeBead = "#3b82f6";
+    historyReset();
   });
 };
 
@@ -68,6 +76,7 @@ export const openDocument = async (id: string) => {
     documentStore.elements = set(elements);
     documentStore.beadPalette = palette;
     editorStore.activeBead = palette[0];
+    historyReset();
   });
 };
 
@@ -113,6 +122,106 @@ export const loadFilesStore = async () => {
   const files = await listFiles();
   filesStore.files = files;
 };
+
+export const historyReset = () => {
+  historyStore.undoStack = [];
+  historyStore.redoStack = [];
+};
+
+export const historyPush = (action: History) => {
+  historyStore.undoStack.push(action);
+  historyStore.redoStack = [];
+};
+
+export const historyUndo = () => {
+  const state = historyStore.undoStack.pop();
+  if (!state) return;
+  historyStore.redoStack.push(state);
+
+  batch(() => {
+    if (state.action === HistoryAction.DRAW) {
+      applyBeadDeltas(state.state, "undo");
+      return;
+    }
+
+    if (state.action === HistoryAction.PALETTE_COLOR_CHANGE) {
+      const { paletteIndex, oldColor, newColor, beadDeltas } = state.state;
+      documentStore.beadPalette[paletteIndex] = oldColor;
+      if (editorStore.activeBead === newColor) {
+        editorStore.activeBead = oldColor;
+      }
+      applyBeadDeltas(beadDeltas, "undo");
+      return;
+    }
+
+    if (state.action === HistoryAction.PALETTE_COLOR_REMOVE) {
+      const { paletteIndex, color, beadDeltas } = state.state;
+      documentStore.beadPalette.splice(paletteIndex, 0, color);
+      applyBeadDeltas(beadDeltas, "undo");
+      return;
+    }
+  });
+};
+
+export const historyRedo = () => {
+  const state = historyStore.redoStack.pop();
+  if (!state) return;
+  historyStore.undoStack.push(state);
+
+  batch(() => {
+    if (state.action === HistoryAction.DRAW) {
+      applyBeadDeltas(state.state, "redo");
+      return;
+    }
+
+    if (state.action === HistoryAction.PALETTE_COLOR_CHANGE) {
+      const { paletteIndex, oldColor, newColor, beadDeltas } = state.state;
+      documentStore.beadPalette[paletteIndex] = newColor;
+      if (editorStore.activeBead === oldColor) {
+        editorStore.activeBead = newColor;
+      }
+      applyBeadDeltas(beadDeltas, "redo");
+      return;
+    }
+
+    if (state.action === HistoryAction.PALETTE_COLOR_REMOVE) {
+      const { paletteIndex, color } = state.state;
+      documentStore.beadPalette.splice(paletteIndex, 1);
+      if (editorStore.activeBead === color) {
+        editorStore.activeBead = documentStore.beadPalette[0] || "";
+      }
+      documentStore.elements = set(
+        documentStore.elements.filter(
+          (el) => !(el instanceof BeadElement && el.color === color)
+        )
+      );
+      return;
+    }
+  });
+};
+
+function applyBeadDeltas(deltas: BeadDrawDelta[], type: "undo" | "redo") {
+  deltas.forEach((delta) => {
+    const beadIndex = findBeadIndexAt(documentStore.elements, delta);
+    const targetColor = type === "undo" ? delta.prevColor : delta.newColor;
+
+    if (targetColor === null && beadIndex !== -1) {
+       documentStore.elements.splice(beadIndex, 1);
+      return;
+    }
+
+    if (targetColor === null) return;
+
+    if (beadIndex !== -1) {
+      (documentStore.elements[beadIndex] as BeadElement).color = targetColor;
+      return;
+    }
+
+    documentStore.elements.push(
+      new BeadElement({ x: delta.x, y: delta.y, color: targetColor })
+    );
+  });
+}
 
 export function applyCenteredTransform(width: number, height: number) {
   const loom = documentStore.elements.find(

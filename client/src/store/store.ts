@@ -6,6 +6,7 @@ import {
   type CanvasState,
   type DocumentState,
   type FilesState,
+  type HistoryState,
 } from "../types";
 
 export const editorStore = proxy<CanvasState>({
@@ -28,4 +29,9 @@ export const uiStore = proxy({
 
 export const filesStore = proxy<FilesState>({
   files: [],
+});
+
+export const historyStore = proxy<HistoryState>({
+  undoStack: [],
+  redoStack: [],
 });

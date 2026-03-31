@@ -3,6 +3,7 @@ import { effect } from "../libs/stateManager";
 import { editorStore } from "../store/store";
 import { Tool } from "../types";
 import "./HistoryControlsComponent";
+import "./ImageToolControlsComponent";
 
 const PencilIcon = /* html */ `<svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <path d="M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.388-1.62m-5.043-.025a15.994 15.994 0 0 1 1.622-3.395m3.42 3.42a15.995 15.995 0 0 0 4.764-4.648l3.876-5.814a1.151 1.151 0 0 0-1.597-1.597L14.146 6.32a15.996 15.996 0 0 0-4.649 4.763m3.42 3.42a6.776 6.776 0 0 0-3.42-3.42" />
@@ -34,6 +35,12 @@ const SelectIcon = /* html */ `<svg viewBox="0 0 24 24" class="w-4 h-4" fill="no
   <path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
 </svg>`;
 
+const ImageIcon = /* html */ `<svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+  <circle cx="9" cy="9" r="2"/>
+  <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+</svg>`;
+
 const tools = [
   {
     tool: Tool.DRAW,
@@ -55,6 +62,10 @@ const tools = [
     tool: Tool.FILL,
     icon: PaintBucketIcon,
   },
+  {
+    tool: Tool.IMAGE,
+    icon: ImageIcon,
+  },
 ];
 
 export class ToolsComponent extends HTMLElement {
@@ -68,8 +79,16 @@ export class ToolsComponent extends HTMLElement {
     this.innerHTML = "";
     this.append(html`
       <div
-        class="bg-amber-50/90 text-slate-800 rounded-xl portrait:bottom-4 portrait:left-1/2 portrait:-translate-x-1/2 landscape:top-1/2 landscape:left-4 landscape:-translate-y-1/2 fixed px-2 py-2 shadow-lg"
+        class="bg-amber-50/90 text-slate-800 rounded-xl portrait:bottom-4 portrait:left-1/2 portrait:-translate-x-1/2 landscape:top-1/2 landscape:left-4 landscape:-translate-y-1/2 sm:flex-row fixed flex flex-col items-center gap-2 px-2 py-2 shadow-lg"
       >
+        <history-controls
+          class="absolute -top-14 -left-0.5 landscape:hidden"
+        ></history-controls>
+
+        <image-tool-controls
+          class="portrait:-top-12 portrait:right-1 landscape:left-full landscape:ml-2 landscape:bottom-0 absolute"
+        ></image-tool-controls>
+
         <ul class="portrait:flex-row landscape:flex-col flex gap-2"></ul>
       </div>
     `);

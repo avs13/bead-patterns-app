@@ -48,6 +48,7 @@ export enum Tool {
   DRAW = "draw",
   ERASE = "erase",
   FILL = "fill",
+  IMAGE = "image",
 }
 
 export enum Action {
@@ -57,6 +58,8 @@ export enum Action {
   DRAW,
   ERASE,
   FILL,
+  RECT,
+  IMAGE,
 }
 
 export enum HistoryAction {

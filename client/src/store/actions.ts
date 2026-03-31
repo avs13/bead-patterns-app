@@ -1,4 +1,5 @@
 import { BeadElement } from "../elements/BeadElement";
+import { ImageElement } from "../elements/ImageElement";
 import { LoomElement } from "../elements/LoomElement";
 import { batch, set } from "../libs/stateManager";
 import {
@@ -16,11 +17,178 @@ import {
   type DocumentState,
   type History,
   type BeadDrawDelta,
+  Tool,
 } from "../types";
 import { documentToThumbnailUrl } from "../utils/documentToImageUtils";
 import { findBeadIndexAt } from "../utils/loomUtils";
-import { translationForAnchor } from "../utils/transformUtils";
+import { translationForAnchor, rotatePoint } from "../utils/transformUtils";
+import {
+  findSimilarColor,
+  hexToRgb,
+  rgbToHex,
+  type ColorEntry,
+} from "../utils/colorUtils";
 import { documentStore, editorStore, filesStore, historyStore } from "./store";
+
+export const convertImageToBeads = (image: ImageElement) => {
+  const loom = documentStore.elements.find(
+    (el) => el instanceof LoomElement
+  ) as LoomElement;
+  if (!loom) return;
+
+  const temp = document.createElement("canvas");
+  const ctx = temp.getContext("2d", { willReadFrequently: true });
+  if (!ctx) return;
+
+  temp.width = image.bitmap.width;
+  temp.height = image.bitmap.height;
+  ctx.drawImage(image.bitmap, 0, 0);
+  const imageData = ctx.getImageData(0, 0, temp.width, temp.height);
+  const data = imageData.data;
+
+  const palette: ColorEntry[] = documentStore.beadPalette.map((color) => ({
+    color,
+    rgb: hexToRgb(color),
+  }));
+
+  const threshold = 30;
+  const newElements = [...documentStore.elements];
+
+  for (let row = 0; row < loom.rows; row++) {
+    for (let col = 0; col < loom.columns; col++) {
+      const beadX = loom.originX + col * loom.columnSpacing;
+      const beadY = loom.originY + row * loom.rowSpacing;
+
+      const icx = image.x + image.width / 2;
+      const icy = image.y + image.height / 2;
+
+      const local = rotatePoint(
+        {
+          x: beadX + loom.BEAD_WIDTH / 2 - icx,
+          y: beadY + loom.BEAD_HEIGHT / 2 - icy,
+        },
+        -image.rotation
+      );
+
+      const sampleX = Math.round(
+        local.x / image.scale + image.bitmap.width / 2
+      );
+      const sampleY = Math.round(
+        local.y / image.scale + image.bitmap.height / 2
+      );
+
+      if (
+        sampleX < 0 ||
+        sampleY < 0 ||
+        sampleX >= temp.width ||
+        sampleY >= temp.height
+      ) {
+        continue;
+      }
+
+      const idx = (sampleY * temp.width + sampleX) * 4;
+      const alpha = data[idx + 3];
+
+      if (alpha < 50) continue;
+
+      const r = data[idx];
+      const g = data[idx + 1];
+      const b = data[idx + 2];
+
+      const mapped = findSimilarColor(palette, r, g, b, threshold);
+      const color = mapped ?? rgbToHex(r, g, b);
+
+      if (!mapped) {
+        palette.push({ color, rgb: [r, g, b] });
+      }
+
+      const existingIdx = newElements.findIndex(
+        (el) => el instanceof BeadElement && el.x === beadX && el.y === beadY
+      );
+
+      if (existingIdx !== -1) {
+        newElements[existingIdx] = new BeadElement({
+          x: beadX,
+          y: beadY,
+          color,
+        });
+      } else {
+        newElements.push(new BeadElement({ x: beadX, y: beadY, color }));
+      }
+    }
+  }
+
+  documentStore.beadPalette = set(palette.map((e) => e.color));
+  documentStore.elements = set(newElements);
+};
+
+export const deleteAllImages = () => {
+  documentStore.elements = set(
+    documentStore.elements.filter((el) => !(el instanceof ImageElement))
+  );
+};
+
+export const importImage = async (
+  position?: { x: number; y: number },
+  fileToImport?: File
+) => {
+  let file: File | null = fileToImport || null;
+
+  if (!file) {
+    if ("showOpenFilePicker" in window) {
+      const [fileHandle] = await (window as any).showOpenFilePicker({
+        types: [
+          {
+            description: "Imágenes",
+            accept: { "image/*": [".png", ".jpg", ".jpeg", ".webp"] },
+          },
+        ],
+        multiple: false,
+      });
+      file = await fileHandle.getFile();
+    } else {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "image/*";
+      file = await new Promise((resolve) => {
+        input.onchange = () => resolve(input.files?.[0] || null);
+        input.click();
+      });
+    }
+  }
+
+  if (!file) return;
+
+  const bitmap = await createImageBitmap(file);
+
+  const loom = documentStore.elements.find(
+    (el) => el instanceof LoomElement
+  ) as LoomElement;
+
+  const refWidth = loom ? loom.width : 800;
+  const refHeight = loom ? loom.height : 800;
+
+  let initialScale = 1;
+  const scaleX = refWidth / bitmap.width;
+  const scaleY = refHeight / bitmap.height;
+
+  if (bitmap.width > refWidth || bitmap.height > refHeight) {
+    initialScale = Math.min(scaleX, scaleY);
+  }
+
+  const pos = position || { x: 0, y: 0 };
+
+  const newImage = new ImageElement({
+    x: pos.x - (bitmap.width * initialScale) / 2,
+    y: pos.y - (bitmap.height * initialScale) / 2,
+    bitmap,
+    scale: initialScale,
+  });
+
+  documentStore.elements.unshift(newImage);
+  documentStore.elements = set([...documentStore.elements]);
+  editorStore.activeTool = Tool.IMAGE;
+};
 
 export const createDocument = ({
   name,
@@ -206,7 +374,7 @@ function applyBeadDeltas(deltas: BeadDrawDelta[], type: "undo" | "redo") {
     const targetColor = type === "undo" ? delta.prevColor : delta.newColor;
 
     if (targetColor === null && beadIndex !== -1) {
-       documentStore.elements.splice(beadIndex, 1);
+      documentStore.elements.splice(beadIndex, 1);
       return;
     }
 

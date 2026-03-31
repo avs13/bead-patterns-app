@@ -56,7 +56,6 @@ export class HistoryControlsComponent extends HTMLElement {
 
     this.cleanupFns.push(
       effect(() => {
-        console.log("cambio undo")
         this.undoBtn.disabled = historyStore.undoStack.length === 0;
         this.redoBtn.disabled = historyStore.redoStack.length === 0;
       })

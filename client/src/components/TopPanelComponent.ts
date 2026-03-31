@@ -4,6 +4,7 @@ import { documentStore, uiStore } from "../store/store";
 import "./SidebarLeftComponent";
 import "./ModalNewFileComponent";
 import "./HistoryControlsComponent";
+import { saveDocument } from "../store/actions";
 
 const LeftPanelIcon = /* html */ `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <rect width="18" height="18" x="3" y="3" rx="2" />

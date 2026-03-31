@@ -1,10 +1,18 @@
 import { BeadElement } from "../elements/BeadElement";
 import { LoomElement } from "../elements/LoomElement";
 import { batch, set } from "../libs/stateManager";
-import { saveFile, type SerializedElement } from "../storage/fileStorage";
-import type { DocumentState } from "../types";
+import {
+  deleteFile,
+  listFiles,
+  loadFileContent,
+  loadFileMeta,
+  renameFile,
+  saveFile,
+  type SerializedElement,
+} from "../storage/fileStorage";
+import type { CanvasElement, DocumentState } from "../types";
 import { translationForAnchor } from "../utils/transformUtils";
-import { documentStore, editorStore } from "./store";
+import { documentStore, editorStore, filesStore } from "./store";
 
 export const createDocument = ({
   name,
@@ -27,10 +35,9 @@ export const createDocument = ({
 };
 
 export const saveDocument = async () => {
-  if (!!documentStore.id || !!documentStore.name) {
-  }
+  if (!documentStore.id || !documentStore.name) return;
   const elementsSerialized = elementsToSerialized(documentStore);
-  saveFile(
+  await saveFile(
     {
       id: documentStore.id,
       name: documentStore.name,
@@ -40,6 +47,44 @@ export const saveDocument = async () => {
       beadPalette: [...documentStore.beadPalette],
     }
   );
+  loadFilesStore();
+};
+
+export const openDocument = async (id: string) => {
+  const meta = await loadFileMeta(id);
+  const content = await loadFileContent(id);
+  if (!content) return false;
+
+  const elements = serializedToElements(content.elements);
+  const palette = content.beadPalette ? content.beadPalette : ["#3b82f6"];
+
+  batch(() => {
+    documentStore.id = id;
+    documentStore.name = meta?.name ?? "";
+    documentStore.elements = set(elements);
+    documentStore.beadPalette = palette;
+    editorStore.activeBead = palette[0];
+  });
+};
+
+export const deleteDocument = async (id: string) => {
+  await deleteFile(id);
+  loadFilesStore();
+};
+
+export const renameDocument = async (id: string, newName: string) => {
+  await renameFile(id, newName);
+
+  if (documentStore.id === id) {
+    documentStore.name = newName;
+  }
+
+  loadFilesStore();
+};
+
+export const loadFilesStore = async () => {
+  const files = await listFiles();
+  filesStore.files = files;
 };
 
 export function applyCenteredTransform(width: number, height: number) {
@@ -89,3 +134,23 @@ export const elementsToSerialized = (
   }
   return result;
 };
+
+export function serializedToElements(
+  data: SerializedElement[]
+): CanvasElement[] {
+  const elements = data
+    .map((el) => {
+      if (el.type === "Loom")
+        return new LoomElement({
+          x: el.x,
+          y: el.y,
+          columns: el.columns,
+          rows: el.rows,
+        });
+      if (el.type === "Bead")
+        return new BeadElement({ x: el.x, y: el.y, color: el.color });
+      return null;
+    })
+    .filter((el): el is LoomElement | BeadElement => !!el);
+  return elements;
+}

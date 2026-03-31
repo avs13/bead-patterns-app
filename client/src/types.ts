@@ -1,3 +1,5 @@
+import type { FileMeta } from "./storage/fileStorage";
+
 export interface CanvasState {
   transform: {
     x: number;
@@ -15,6 +17,10 @@ export interface DocumentState {
   name: string;
   beadPalette: string[];
   elements: CanvasElement[];
+}
+
+export interface FilesState {
+  files: FileMeta[];
 }
 
 export type Vec2 = {

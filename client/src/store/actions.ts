@@ -46,12 +46,14 @@ export const convertImageToBeads = (image: ImageElement) => {
   const imageData = ctx.getImageData(0, 0, temp.width, temp.height);
   const data = imageData.data;
 
-  const palette: ColorEntry[] = documentStore.beadPalette.map((color) => ({
+  const originalPalette = [...documentStore.beadPalette];
+  const palette: ColorEntry[] = originalPalette.map((color) => ({
     color,
     rgb: hexToRgb(color),
   }));
 
   const threshold = 30;
+  const beadDeltas: BeadDrawDelta[] = [];
   const newElements = [...documentStore.elements];
 
   for (let row = 0; row < loom.rows; row++) {
@@ -106,19 +108,39 @@ export const convertImageToBeads = (image: ImageElement) => {
         (el) => el instanceof BeadElement && el.x === beadX && el.y === beadY
       );
 
-      if (existingIdx !== -1) {
-        newElements[existingIdx] = new BeadElement({
-          x: beadX,
-          y: beadY,
-          color,
-        });
-      } else {
-        newElements.push(new BeadElement({ x: beadX, y: beadY, color }));
+      const prevColor =
+        existingIdx !== -1
+          ? (newElements[existingIdx] as BeadElement).color
+          : null;
+
+      if (prevColor !== color) {
+        beadDeltas.push({ x: beadX, y: beadY, prevColor, newColor: color });
+
+        if (existingIdx !== -1) {
+          newElements[existingIdx] = new BeadElement({
+            x: beadX,
+            y: beadY,
+            color,
+          });
+        } else {
+          newElements.push(new BeadElement({ x: beadX, y: beadY, color }));
+        }
       }
     }
   }
 
-  documentStore.beadPalette = set(palette.map((e) => e.color));
+  const newPalette = palette.map((e) => e.color);
+
+  historyPush({
+    action: HistoryAction.IMAGE_CONVERT,
+    state: {
+      prevPalette: originalPalette,
+      newPalette: newPalette,
+      beadDeltas: beadDeltas,
+    },
+  });
+
+  documentStore.beadPalette = newPalette;
   documentStore.elements = set(newElements);
 };
 
@@ -328,6 +350,13 @@ export const historyUndo = () => {
       applyBeadDeltas(beadDeltas, "undo");
       return;
     }
+
+    if (state.action === HistoryAction.IMAGE_CONVERT) {
+      const { prevPalette, beadDeltas } = state.state;
+      documentStore.beadPalette = set(prevPalette);
+      applyBeadDeltas(beadDeltas, "undo");
+      return;
+    }
   });
 };
 
@@ -363,6 +392,13 @@ export const historyRedo = () => {
           (el) => !(el instanceof BeadElement && el.color === color)
         )
       );
+      return;
+    }
+
+    if (state.action === HistoryAction.IMAGE_CONVERT) {
+      const { newPalette, beadDeltas } = state.state;
+      documentStore.beadPalette = set(newPalette);
+      applyBeadDeltas(beadDeltas, "redo");
       return;
     }
   });

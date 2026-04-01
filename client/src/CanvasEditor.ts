@@ -5,6 +5,7 @@ import {
   type CanvasEditorOptions,
   type CanvasState,
   type DocumentState,
+  Tool,
 } from "./types";
 import { ToolsComponent } from "./components/ToolsComponent";
 import type {
@@ -18,7 +19,10 @@ import { documentStore, editorStore } from "./store/store";
 import { BeadPaletteComponent } from "./components/BeadPaletteComponent";
 import { TopPanelComponent } from "./components/TopPanelComponent";
 import { CursorHandler } from "./handlers/CursorHandler";
+import { ImageElement } from "./elements/ImageElement";
 import { ShortcutsHandler } from "./handlers/ShorcutsHandler";
+import { ImageHandler } from "./components/ImageHandler";
+import { ImageDropHandler } from "./handlers/ImageDropHandler";
 
 export class CanvasEditor {
   #root: HTMLElement;
@@ -33,6 +37,9 @@ export class CanvasEditor {
   document: DocumentState = documentStore;
 
   handlers: CanvasHandler[] = [];
+
+  rectPreview: { x: number; y: number; width: number; height: number } | null =
+    null;
 
   constructor(root: HTMLElement, options: CanvasEditorOptions = {}) {
     if (!root) throw new Error("El elemento root HTML no existe");
@@ -75,7 +82,9 @@ export class CanvasEditor {
       DrawBeadHandler,
       EraseBeadHandler,
       FillHandler,
-      ShortcutsHandler
+      ShortcutsHandler,
+      ImageHandler,
+      ImageDropHandler,
     ];
 
     this.handlers = handles.map((Handler) => new Handler(this));
@@ -112,8 +121,70 @@ export class CanvasEditor {
       element.draw(this.ctx);
     }
 
+    this.document.elements.forEach((element) => {
+      if (element instanceof ImageElement) {
+        element.draw(this.ctx);
+      }
+    });
+
+    this.renderGizmos();
+
     this.ctx.restore();
     requestAnimationFrame(this.loop.bind(this));
+  }
+
+  private renderGizmos() {
+    if (this.state.activeTool !== Tool.IMAGE) return;
+
+    const images = this.document.elements.filter(
+      (el): el is ImageElement => el instanceof ImageElement
+    );
+
+    for (const image of images) {
+      const { x, y, width, height, rotation } = image;
+      const handleSize = 8 / this.state.transform.zoom;
+      const cx = x + width / 2;
+      const cy = y + height / 2;
+
+      this.ctx.save();
+      this.ctx.translate(cx, cy);
+      this.ctx.rotate(rotation);
+
+      const rx = -width / 2;
+      const ry = -height / 2;
+
+      this.ctx.strokeStyle = "#364AFF";
+      this.ctx.lineWidth = 2 / this.state.transform.zoom;
+      this.ctx.strokeRect(rx, ry, width, height);
+
+      this.ctx.fillStyle = "white";
+      const corners = [
+        { cx: rx, cy: ry },
+        { cx: rx + width, cy: ry },
+        { cx: rx, cy: ry + height },
+        { cx: rx + width, cy: ry + height },
+      ];
+
+      for (const { cx: hcx, cy: hcy } of corners) {
+        this.ctx.beginPath();
+        this.ctx.arc(hcx, hcy, handleSize / 1.5, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.stroke();
+      }
+
+      const rotHandleDist = 24 / this.state.transform.zoom;
+      this.ctx.beginPath();
+      this.ctx.moveTo(0, ry);
+      this.ctx.lineTo(0, ry - rotHandleDist);
+      this.ctx.stroke();
+
+      this.ctx.beginPath();
+      this.ctx.arc(0, ry - rotHandleDist, handleSize / 1.5, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.stroke();
+
+      this.ctx.restore();
+    }
   }
 
   private resizeCanvas() {

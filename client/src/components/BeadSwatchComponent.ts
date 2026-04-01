@@ -1,7 +1,9 @@
 import { html } from "../dom";
 import { BeadElement } from "../elements/BeadElement";
 import { set } from "../libs/stateManager";
+import { historyPush } from "../store/actions";
 import { documentStore, editorStore } from "../store/store";
+import { HistoryAction, type BeadDrawDelta } from "../types";
 import { beadToImageUrl } from "../utils/beadToImageUtils";
 import type { ColorPickerComponent } from "./ColorPickerComponent";
 
@@ -143,6 +145,30 @@ export class BeadSwatchComponent extends HTMLElement {
   }
 
   deleteBead() {
+    const paletteIndex = documentStore.beadPalette.findIndex(
+      (c) => c === this.color
+    );
+    const affectedBeads = documentStore.elements.filter(
+      (el): el is BeadElement =>
+        el instanceof BeadElement && el.color === this.color
+    );
+
+    const beadDeltas: BeadDrawDelta[] = affectedBeads.map((bead) => ({
+      x: bead.x,
+      y: bead.y,
+      prevColor: bead.color,
+      newColor: null,
+    }));
+
+    historyPush({
+      action: HistoryAction.PALETTE_COLOR_REMOVE,
+      state: {
+        color: this.color,
+        paletteIndex,
+        beadDeltas,
+      },
+    });
+
     documentStore.beadPalette = documentStore.beadPalette.filter(
       (bead) => bead !== this.color
     );
@@ -170,22 +196,41 @@ export class BeadSwatchComponent extends HTMLElement {
     );
     if (hasColor) return;
 
-    const indexOf = documentStore.beadPalette.findIndex(
+    const paletteIndex = documentStore.beadPalette.findIndex(
       (color) => color === this.color
     );
 
-    documentStore.beadPalette[indexOf] = newColor;
+    const affectedBeads = documentStore.elements.filter(
+      (el): el is BeadElement =>
+        el instanceof BeadElement && el.color === this.color
+    );
+
+    const beadDeltas: BeadDrawDelta[] = affectedBeads.map((bead) => ({
+      x: bead.x,
+      y: bead.y,
+      prevColor: bead.color,
+      newColor: newColor,
+    }));
+
+    historyPush({
+      action: HistoryAction.PALETTE_COLOR_CHANGE,
+      state: {
+        oldColor: this.color,
+        newColor: newColor,
+        paletteIndex,
+        beadDeltas,
+      },
+    });
+
+    documentStore.beadPalette[paletteIndex] = newColor;
     editorStore.activeBead = newColor;
     this.dialogComponent.close();
 
-    (
-      documentStore.elements.filter(
-        (element) =>
-          element instanceof BeadElement && element.color === this.color
-      ) as BeadElement[]
-    ).forEach((bead) => {
+    affectedBeads.forEach((bead) => {
       bead.color = newColor;
     });
+
+    documentStore.elements = set([...documentStore.elements]);
   }
 }
 

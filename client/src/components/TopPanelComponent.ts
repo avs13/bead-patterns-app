@@ -4,6 +4,7 @@ import { documentStore, uiStore } from "../store/store";
 import "./SidebarLeftComponent";
 import "./ModalNewFileComponent";
 import "./HistoryControlsComponent";
+import "./RotateControlsComponent";
 import { saveDocument } from "../store/actions";
 import { exportImage } from "../utils/documentToImageUtils";
 
@@ -110,6 +111,9 @@ export class TopPanelComponent extends HTMLElement {
         <history-controls
           class="landscape:flex portrait:hidden"
         ></history-controls>
+        <rotate-controls
+          class="landscape:flex portrait:hidden"
+        ></rotate-controls>
         <h1 id="doc-name" class="text-sm font-semibold"></h1>
         <modal-new-file></modal-new-file>
         <sidebar-left></sidebar-left>

@@ -21,7 +21,11 @@ import {
 } from "../types";
 import { documentToThumbnailUrl } from "../utils/documentToImageUtils";
 import { findBeadIndexAt } from "../utils/loomUtils";
-import { translationForAnchor, rotatePoint } from "../utils/transformUtils";
+import {
+  translationForAnchor,
+  rotatePoint,
+  canvasToWorld,
+} from "../utils/transformUtils";
 import {
   findSimilarColor,
   hexToRgb,
@@ -29,6 +33,7 @@ import {
   type ColorEntry,
 } from "../utils/colorUtils";
 import { documentStore, editorStore, filesStore, historyStore } from "./store";
+import { normalizeAngle } from "../utils/vectorUtils";
 
 export const convertImageToBeads = (image: ImageElement) => {
   const loom = documentStore.elements.find(
@@ -425,6 +430,32 @@ function applyBeadDeltas(deltas: BeadDrawDelta[], type: "undo" | "redo") {
       new BeadElement({ x: delta.x, y: delta.y, color: targetColor })
     );
   });
+}
+
+export function rotateWorld90Degrees(width: number, height: number) {
+  const midPoint = {
+    x: width / 2,
+    y: height / 2,
+  };
+
+  const anchorToWorld = canvasToWorld(midPoint, editorStore.transform);
+
+  const nextAngle = normalizeAngle(
+    Math.round(editorStore.transform.rotation / (Math.PI / 2) + 1) *
+      (Math.PI / 2)
+  );
+
+  editorStore.transform.rotation = nextAngle;
+  const nextTranslation = translationForAnchor(
+    anchorToWorld,
+    {
+      x: width / 2,
+      y: height / 2,
+    },
+    editorStore.transform
+  );
+  editorStore.transform.x = nextTranslation.x;
+  editorStore.transform.y = nextTranslation.y;
 }
 
 export function applyCenteredTransform(width: number, height: number) {

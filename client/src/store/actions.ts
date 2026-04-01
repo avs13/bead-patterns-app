@@ -324,11 +324,11 @@ export const historyPush = (action: History) => {
 };
 
 export const historyUndo = () => {
-  const state = historyStore.undoStack.pop();
-  if (!state) return;
-  historyStore.redoStack.push(state);
-
   batch(() => {
+    const state = historyStore.undoStack.pop();
+    if (!state) return;
+    historyStore.redoStack.push(state);
+
     if (state.action === HistoryAction.DRAW) {
       applyBeadDeltas(state.state, "undo");
       return;

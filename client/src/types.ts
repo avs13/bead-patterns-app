@@ -66,6 +66,7 @@ export enum HistoryAction {
   DRAW,
   PALETTE_COLOR_CHANGE,
   PALETTE_COLOR_REMOVE,
+  IMAGE_CONVERT,
 }
 
 export interface HistoryState {
@@ -104,7 +105,17 @@ export interface PaletteColorRemoveHistory {
   };
 }
 
+export interface ImageConvertHistory {
+  action: HistoryAction.IMAGE_CONVERT;
+  state: {
+    prevPalette: string[];
+    newPalette: string[];
+    beadDeltas: BeadDrawDelta[];
+  };
+}
+
 export type History =
   | DrawHistory
   | PaletteColorChangeHistory
-  | PaletteColorRemoveHistory;
+  | PaletteColorRemoveHistory
+  | ImageConvertHistory;
